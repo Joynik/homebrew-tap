@@ -1,0 +1,30 @@
+name: Update All Casks
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # Запуск каждый день в 06:00 UTC
+  workflow_dispatch:   # Позволяет запускать обновление вручную кнопкой в интерфейсе GitHub
+
+jobs:
+  update-casks:
+    runs-on: macos-latest # Обязательно macOS, так как утилита работает внутри окружения Homebrew
+    strategy:
+      fail-fast: false    # Если один каск выдаст ошибку, остальные всё равно продолжат обновляться
+      matrix:
+        include:
+          - cask: "machstruct"
+          - cask: "supertool"
+          # Сюда в будущем просто дописывайте новые каски:
+          # - cask: "anotherapp"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Bump ${{ matrix.cask }} Cask
+        uses: LanikSJ/action-homebrew-bump-cask@v1
+        with:
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          tap: ${{ github.repository }}
+          cask: ${{ matrix.cask }}
+          livecheck: true
