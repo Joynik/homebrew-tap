@@ -2,17 +2,18 @@ name: Update All Casks
 
 on:
   schedule:
-    - cron: "0 6 * * *" # Каждый день в 6 утра UTC
-  workflow_dispatch:   # Кнопка ручного запуска
+    - cron: "0 6 * * *"
+  workflow_dispatch:
 
 jobs:
   update-casks:
-    runs-on: macos-latest # Обязательно macOS для работы brew
+    runs-on: macos-latest
     strategy:
       fail-fast: false
       matrix:
         include:
           - cask: "machstruct"
+          - cask: "atoll"
           # - cask: "tool"
 
     steps:
