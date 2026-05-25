@@ -15,6 +15,7 @@ jobs:
           - cask: "machstruct"
           - cask: "voicebox"
           - cask: "atoll"
+          - cask: "mtarsier"
 
     steps:
       - name: Set up Homebrew
