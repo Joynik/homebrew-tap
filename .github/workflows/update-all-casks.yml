@@ -13,8 +13,8 @@ jobs:
       matrix:
         include:
           - cask: "machstruct"
+          - cask: "voicebox"
           - cask: "atoll"
-          # - cask: "tool"
 
     steps:
       - name: Set up Homebrew
