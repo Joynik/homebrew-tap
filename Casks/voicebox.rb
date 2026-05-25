@@ -3,12 +3,12 @@ cask "voicebox" do
   sha256 "1ef6d28d17b96e1b331340831bf59ea2dd3c526dbbdcadb3d2b90f186e9b3070"
 
   url "https://github.com/jamiepine/voicebox/releases/download/v#{version}/Voicebox_#{version}_aarch64.dmg"
-  name "MachStruct"
-  desc "Native macOS viewer and editor for JSON, XML, YAML, CSV"
-  homepage "https://github.com/lustech/MachStruct"
+  name "Voicebox"
+  desc "The open-source AI voice studio. Clone, dictate, create."
+  homepage "https://github.com/jamiepine/voicebox/"
 
   livecheck do
-    url "https://github.com/lustech/MachStruct/releases/latest"
+    url "https://github.com/jamiepine/voicebox//releases/latest"
     strategy :header_match
   end
 
