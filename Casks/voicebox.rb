@@ -1,0 +1,16 @@
+cask "voicebox" do
+  version "0.5.0"
+  sha256 "1ef6d28d17b96e1b331340831bf59ea2dd3c526dbbdcadb3d2b90f186e9b3070"
+
+  url "https://github.com/jamiepine/voicebox/releases/download/v#{version}/Voicebox_#{version}_aarch64.dmg"
+  name "MachStruct"
+  desc "Native macOS viewer and editor for JSON, XML, YAML, CSV"
+  homepage "https://github.com/lustech/MachStruct"
+
+  livecheck do
+    url "https://github.com/lustech/MachStruct/releases/latest"
+    strategy :header_match
+  end
+
+  app "voicebox.app"
+end
