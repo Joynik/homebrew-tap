@@ -7,9 +7,11 @@ cask "machstruct" do
   desc "Native macOS viewer and editor for JSON, XML, YAML, CSV"
   homepage "https://github.com/lustech/MachStruct"
 
+  depends_on :macos
+
   livecheck do
-    url "https://github.com/lustech/MachStruct/releases/latest"
-    strategy :header_match
+    url :url
+    strategy :github_latest
   end
 
   app "MachStruct.app"
