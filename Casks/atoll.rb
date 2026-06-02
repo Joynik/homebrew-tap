@@ -8,8 +8,8 @@ cask "atoll" do
   homepage "https://github.com/Ebullioscopic/Atoll"
 
   livecheck do
-    url "https://github.com/Ebullioscopic/Atoll/releases/latest"
-    strategy :header_match
+    url :url
+    strategy :github_latest
   end
 
   app "Atoll.app"
