@@ -7,9 +7,11 @@ cask "voicebox" do
   desc "The open-source AI voice studio. Clone, dictate, create."
   homepage "https://github.com/jamiepine/voicebox/"
 
+  depends_on :macos
+
   livecheck do
-    url "https://github.com/jamiepine/voicebox//releases/latest"
-    strategy :header_match
+    url :url
+    strategy :github_latest
   end
 
   app "voicebox.app"
