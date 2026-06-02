@@ -7,9 +7,11 @@ cask "mtarsier" do
   desc "The Open Source MCP & Skill Manager for Claude, Cursor, VS Code & any AI client"
   homepage "https://github.com/mcp360/mTarsier"
 
+  depends_on :macos
+
   livecheck do
-    url "https://github.com/mcp360/mTarsier/releases/latest"
-    strategy :header_match
+    url :url
+    strategy :github_latest
   end
 
   app "mtarsier.app"
