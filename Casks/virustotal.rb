@@ -15,4 +15,13 @@ cask "virustotal" do
   end
 
   app "virustotal.app"
+
+  zap trash: [
+    "~/Library/Application Scripts/org.eu.moyuapp.VirusTotal",
+    "~/Library/Application Support/org.eu.moyuapp.VirusTotal",
+    "~/Library/Caches/org.eu.moyuapp.VirusTotal",
+    "~/Library/HTTPStorages/org.eu.moyuapp.VirusTotal",
+    "~/Library/Preferences/org.eu.moyuapp.VirusTotal.plist",
+    "~/Library/Saved Application State/org.eu.moyuapp.VirusTotal.savedState",
+  ]
 end
