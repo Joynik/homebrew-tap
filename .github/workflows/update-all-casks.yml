@@ -17,6 +17,7 @@ jobs:
           - cask: "atoll"
           - cask: "mtarsier"
           - cask: "virustotal"
+          - cask: "screentranslate"
 
     steps:
       - name: Set up Homebrew
