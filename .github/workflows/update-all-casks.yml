@@ -18,6 +18,7 @@ jobs:
           - cask: "mtarsier"
           - cask: "virustotal"
           - cask: "screentranslate"
+          - cask: "voicestudio"
 
     steps:
       - name: Set up Homebrew
