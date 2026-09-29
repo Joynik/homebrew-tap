@@ -13,7 +13,7 @@
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-## Установка
+## Установка tap
 
 Подключите tap с GitHub. Замените `<owner>` на имя владельца репозитория:
 
@@ -21,20 +21,15 @@
 brew tap <owner>/tap
 ```
 
-После этого установите нужное приложение по имени cask:
+## Установка
 
-Доступные приложения:
+```bash
+brew install --cask <owner>/tap/<cask>
+```
 
-| Приложение | Команда |
-| --- | --- |
-| Atoll | `brew install --cask <owner>/tap/atoll` |
-| MachStruct | `brew install --cask <owner>/tap/machstruct` |
-| mTarsier | `brew install --cask <owner>/tap/mtarsier` |
-| ScreenTranslate | `brew install --cask <owner>/tap/screentranslate` |
-| VirusTotal | `brew install --cask <owner>/tap/virustotal` |
-| Voicebox | `brew install --cask <owner>/tap/voicebox` |
-
-После установки приложение появится в папке `Applications` и будет доступно через Launchpad или Spotlight.
+```bash
+brew install --cask joynik/tap/<cask>
+```
 
 ## Обновление
 
