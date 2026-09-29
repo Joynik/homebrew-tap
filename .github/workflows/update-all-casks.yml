@@ -19,6 +19,7 @@ jobs:
           - cask: "virustotal"
           - cask: "screentranslate"
           - cask: "voicestudio"
+          - cask: "codeburn"
 
     steps:
       - name: Set up Homebrew
