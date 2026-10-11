@@ -8,9 +8,9 @@ set -euo pipefail
 
 # Only select the updater's exact branch in this repository, targeting main.
 find_update_pr() {
-  gh pr list --repo "$GITHUB_REPOSITORY" --state open --base main \
+  gh pr list --repo "$GITHUB_REPOSITORY" --state "${2:-open}" --base main \
     --head "$1" --json number,headRefOid,isCrossRepository \
-    --jq '[.[] | select(.isCrossRepository == false)] | if length == 1 then .[0] | [.number, .headRefOid] | @tsv else empty end'
+    --jq '[.[] | select(.isCrossRepository == false)] | sort_by(.number) | last | if . == null then empty else [.number, .headRefOid] | @tsv end'
 }
 
 failed=0
@@ -35,6 +35,27 @@ for cask_file in Casks/*.rb; do
       failed=1
       echo "::endgroup::"
       continue
+    fi
+    # A closed PR can leave its bump branch behind. Reuse it instead of
+    # pushing an unrelated new commit to the same branch name.
+    if [[ -z "$pr" ]]; then
+      if ! closed_pr=$(find_update_pr "$branch" closed); then
+        echo "::error::Closed PR lookup failed for ${full_name}"
+        failed=1
+        echo "::endgroup::"
+        continue
+      fi
+      if [[ -n "$closed_pr" ]] && [[ -n "$(git ls-remote --heads origin "refs/heads/${branch}")" ]]; then
+        IFS=$'\t' read -r closed_number closed_sha <<<"$closed_pr"
+        echo "Reopening update PR #${closed_number} for ${full_name} ${version}."
+        if ! gh pr reopen "$closed_number" --repo "$GITHUB_REPOSITORY"; then
+          echo "::error::Could not reopen update PR #${closed_number}"
+          failed=1
+          echo "::endgroup::"
+          continue
+        fi
+        pr="$closed_pr"
+      fi
     fi
     if [[ -z "$pr" ]] && ! brew bump-cask-pr --version="$version" --no-audit --no-style --no-browse --no-fork "$full_name"; then
       echo "::error::Update PR failed for ${full_name}"
