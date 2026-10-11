@@ -3,6 +3,15 @@ set -euo pipefail
 
 : "${TAP_NAME:?Homebrew tap name is required}"
 : "${HOMEBREW_GITHUB_API_TOKEN:?HOMEBREW_TAP_TOKEN secret is required}"
+: "${GITHUB_REPOSITORY:?GitHub repository is required}"
+: "${GH_TOKEN:?GitHub CLI token is required}"
+
+# Only select the updater's exact branch in this repository, targeting main.
+find_update_pr() {
+  gh pr list --repo "$GITHUB_REPOSITORY" --state open --base main \
+    --head "$1" --json number,headRefOid,isCrossRepository \
+    --jq '[.[] | select(.isCrossRepository == false)] | if length == 1 then .[0] | [.number, .headRefOid] | @tsv else empty end'
+}
 
 failed=0
 for cask_file in Casks/*.rb; do
@@ -20,9 +29,29 @@ for cask_file in Casks/*.rb; do
     failed=1
   elif jq -e '.[0].version.outdated == true' <<<"$result" >/dev/null; then
     version=$(jq -r '.[0].version.latest' <<<"$result")
-    if ! brew bump-cask-pr --version="$version" --no-audit --no-style --no-browse --no-fork "$full_name"; then
+    branch="bump-${cask_name}-${version}"
+    if ! pr=$(find_update_pr "$branch"); then
+      echo "::error::PR lookup failed for ${full_name}"
+      failed=1
+      echo "::endgroup::"
+      continue
+    fi
+    if [[ -z "$pr" ]] && ! brew bump-cask-pr --version="$version" --no-audit --no-style --no-browse --no-fork "$full_name"; then
       echo "::error::Update PR failed for ${full_name}"
       failed=1
+      echo "::endgroup::"
+      continue
+    fi
+    if ! pr=$(find_update_pr "$branch") || [[ -z "$pr" ]]; then
+      echo "::error::Could not find update PR for ${full_name} ${version}"
+      failed=1
+    else
+      IFS=$'\t' read -r pr_number head_sha <<<"$pr"
+      if ! gh pr merge "$pr_number" --repo "$GITHUB_REPOSITORY" \
+        --auto --squash --match-head-commit "$head_sha"; then
+        echo "::error::Could not enable auto-merge for PR #${pr_number}"
+        failed=1
+      fi
     fi
   else
     echo "${full_name} is up to date."
