@@ -68,8 +68,18 @@ for cask_file in Casks/*.rb; do
       failed=1
     else
       IFS=$'\t' read -r pr_number head_sha <<<"$pr"
-      if ! gh pr merge "$pr_number" --repo "$GITHUB_REPOSITORY" \
-        --auto --squash --match-head-commit "$head_sha"; then
+      if merge_output=$(gh pr merge "$pr_number" --repo "$GITHUB_REPOSITORY" \
+        --auto --squash --match-head-commit "$head_sha" 2>&1); then
+        echo "$merge_output"
+      elif [[ "$merge_output" == *"Branch does not have required protected branch rules"* ]]; then
+        echo "No required branch rules: merging PR #${pr_number} now."
+        if ! gh pr merge "$pr_number" --repo "$GITHUB_REPOSITORY" \
+          --squash --match-head-commit "$head_sha"; then
+          echo "::error::Could not merge PR #${pr_number}"
+          failed=1
+        fi
+      else
+        echo "$merge_output"
         echo "::error::Could not enable auto-merge for PR #${pr_number}"
         failed=1
       fi
