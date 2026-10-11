@@ -5,30 +5,27 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
 
+concurrency:
+  group: update-all-casks
+  cancel-in-progress: false
+
 jobs:
   update-casks:
-    runs-on: macos-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - cask: "machstruct"
-          - cask: "voicebox"
-          - cask: "atoll"
-          - cask: "mtarsier"
-          - cask: "virustotal"
-          - cask: "screentranslate"
-          - cask: "voicestudio"
-          - cask: "codeburn"
-          - cask: "magnitude"
-          - cask: "omniroute"
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      HOMEBREW_NO_ANALYTICS: "1"
 
     steps:
       - name: Set up Homebrew
+        id: homebrew
         uses: Homebrew/actions/setup-homebrew@main
 
-      - name: Bump ${{ matrix.cask }} cask
-        uses: Homebrew/actions/bump-packages@main
-        with:
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
-          casks: ${{ matrix.cask }}
+      - name: Check versions and open update PRs
+        shell: bash
+        env:
+          TAP_NAME: ${{ steps.homebrew.outputs.tap-name }}
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: bash update-casks/update.sh
