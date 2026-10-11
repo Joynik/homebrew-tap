@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
+trap 'echo "::error::Unexpected script failure at line ${LINENO} (${full_name:-initialization})"' ERR
 
 : "${TAP_NAME:?Homebrew tap name is required}"
 : "${HOMEBREW_GITHUB_API_TOKEN:?HOMEBREW_TAP_TOKEN secret is required}"
@@ -14,6 +15,12 @@ find_update_pr() {
 }
 
 failed=0
+failed_casks=()
+mark_failed() {
+  failed=1
+  failed_casks+=("$full_name")
+}
+
 for cask_file in Casks/*.rb; do
   cask_name="${cask_file##*/}"
   cask_name="${cask_name%.rb}"
@@ -22,17 +29,17 @@ for cask_file in Casks/*.rb; do
 
   if ! result=$(brew livecheck --cask --json "$full_name"); then
     echo "::error::Version check failed for ${full_name}"
-    failed=1
+    mark_failed
   elif ! jq -e 'type == "array" and length == 1 and .[0].version.latest != null and .[0].version.outdated != null' <<<"$result" >/dev/null; then
     echo "$result"
     echo "::error::No valid version result for ${full_name}"
-    failed=1
+    mark_failed
   elif jq -e '.[0].version.outdated == true' <<<"$result" >/dev/null; then
     version=$(jq -r '.[0].version.latest' <<<"$result")
     branch="bump-${cask_name}-${version}"
     if ! pr=$(find_update_pr "$branch"); then
       echo "::error::PR lookup failed for ${full_name}"
-      failed=1
+      mark_failed
       echo "::endgroup::"
       continue
     fi
@@ -41,7 +48,7 @@ for cask_file in Casks/*.rb; do
     if [[ -z "$pr" ]]; then
       if ! closed_pr=$(find_update_pr "$branch" closed); then
         echo "::error::Closed PR lookup failed for ${full_name}"
-        failed=1
+        mark_failed
         echo "::endgroup::"
         continue
       fi
@@ -50,7 +57,7 @@ for cask_file in Casks/*.rb; do
         echo "Reopening update PR #${closed_number} for ${full_name} ${version}."
         if ! gh pr reopen "$closed_number" --repo "$GITHUB_REPOSITORY"; then
           echo "::error::Could not reopen update PR #${closed_number}"
-          failed=1
+          mark_failed
           echo "::endgroup::"
           continue
         fi
@@ -59,29 +66,32 @@ for cask_file in Casks/*.rb; do
     fi
     if [[ -z "$pr" ]] && ! brew bump-cask-pr --version="$version" --no-audit --no-style --no-browse --no-fork "$full_name"; then
       echo "::error::Update PR failed for ${full_name}"
-      failed=1
+      mark_failed
       echo "::endgroup::"
       continue
     fi
     if ! pr=$(find_update_pr "$branch") || [[ -z "$pr" ]]; then
       echo "::error::Could not find update PR for ${full_name} ${version}"
-      failed=1
+      mark_failed
     else
       IFS=$'\t' read -r pr_number head_sha <<<"$pr"
       if merge_output=$(gh pr merge "$pr_number" --repo "$GITHUB_REPOSITORY" \
         --auto --squash --match-head-commit "$head_sha" 2>&1); then
         echo "$merge_output"
+        echo "PR #${pr_number}: merge or auto-merge request accepted by GitHub."
       elif [[ "$merge_output" == *"Branch does not have required protected branch rules"* ]]; then
         echo "No required branch rules: merging PR #${pr_number} now."
         if ! gh pr merge "$pr_number" --repo "$GITHUB_REPOSITORY" \
           --squash --match-head-commit "$head_sha"; then
           echo "::error::Could not merge PR #${pr_number}"
-          failed=1
+          mark_failed
+        else
+          echo "PR #${pr_number}: merged successfully."
         fi
       else
         echo "$merge_output"
         echo "::error::Could not enable auto-merge for PR #${pr_number}"
-        failed=1
+        mark_failed
       fi
     fi
   else
@@ -90,5 +100,11 @@ for cask_file in Casks/*.rb; do
 
   echo "::endgroup::"
 done
+
+if (( failed != 0 )); then
+  echo "::error::Cask updates failed: ${failed_casks[*]}"
+else
+  echo "All cask updates completed successfully."
+fi
 
 exit "$failed"
