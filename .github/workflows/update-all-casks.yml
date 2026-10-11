@@ -21,6 +21,7 @@ jobs:
           - cask: "voicestudio"
           - cask: "codeburn"
           - cask: "magnitude"
+          - cask: "omniroute"
 
     steps:
       - name: Set up Homebrew
