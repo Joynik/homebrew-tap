@@ -15,17 +15,13 @@
 
 ## Установка tap
 
-Подключите tap с GitHub. Замените `<owner>` на имя владельца репозитория:
+Подключите tap с GitHub.
 
 ```bash
-brew tap <owner>/tap
+brew tap joynik/tap
 ```
 
 ## Установка
-
-```bash
-brew install --cask <owner>/tap/<cask>
-```
 
 ```bash
 brew install --cask joynik/tap/<cask>
@@ -36,7 +32,7 @@ brew install --cask joynik/tap/<cask>
 Если приложение уже установлено, обновите его командой:
 
 ```bash
-brew upgrade --cask <owner>/tap/atoll --greedy
+brew upgrade --cask joynik/tap/<cask> --greedy
 ```
 
 При первой установке используйте `brew install`, как указано в таблице выше.
@@ -44,13 +40,5 @@ brew upgrade --cask <owner>/tap/atoll --greedy
 ## Удаление
 
 ```bash
-brew uninstall --cask atoll
+brew uninstall --cask <cask>
 ```
-
-Замените `atoll` на имя нужного cask.
-
-## Примечания
-
-- При первом запуске macOS может запросить подтверждение в `System Settings → Privacy & Security`.
-- `Voicebox` в текущей версии распространяется для Apple Silicon (`aarch64`).
-- `mTarsier` в текущей версии распространяется как Intel (`x64`) приложение и на Apple Silicon запускается через Rosetta 2.
