@@ -35,8 +35,6 @@ brew install --cask joynik/tap/<cask>
 brew upgrade --cask joynik/tap/<cask> --greedy
 ```
 
-При первой установке используйте `brew install`, как указано в таблице выше.
-
 ## Удаление
 
 ```bash
