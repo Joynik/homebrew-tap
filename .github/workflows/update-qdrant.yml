@@ -1,0 +1,47 @@
+name: update-qdrant
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check latest release
+        id: rel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=$(gh api repos/qdrant/qdrant/releases/latest --jq .tag_name)
+          ver="${tag#v}"
+          cur=$(sed -n 's/^  version "\(.*\)"$/\1/p' Formula/qdrant.rb)
+          echo "ver=$ver" >> "$GITHUB_OUTPUT"
+          if [ "$ver" != "$cur" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; else echo "changed=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Update formula
+        if: steps.rel.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          ver="${{ steps.rel.outputs.ver }}"
+          base="https://github.com/qdrant/qdrant/releases/download/v${ver}"
+          arm=$(curl -fsSL "$base/qdrant-aarch64-apple-darwin.tar.gz" | sha256sum | cut -d' ' -f1)
+          intel=$(curl -fsSL "$base/qdrant-x86_64-apple-darwin.tar.gz" | sha256sum | cut -d' ' -f1)
+          sed -i "s|^  version \".*\"|  version \"${ver}\"|" Formula/qdrant.rb
+          sed -i "s|sha256 \".*\" # arm|sha256 \"${arm}\" # arm|" Formula/qdrant.rb
+          sed -i "s|sha256 \".*\" # intel|sha256 \"${intel}\" # intel|" Formula/qdrant.rb
+
+      - name: Commit
+        if: steps.rel.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "qdrant ${{ steps.rel.outputs.ver }}"
+          git push
