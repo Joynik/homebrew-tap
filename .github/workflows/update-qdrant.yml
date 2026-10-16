@@ -1,4 +1,4 @@
-name: update-qdrant
+name: Update Qdrant
 
 on:
   schedule:
