@@ -1,8 +1,8 @@
 class Osm < Formula
   desc "Local MCP server for semantic search in Obsidian vaults"
   homepage "https://github.com/Joynik/obsidian-semantic-mcp"
-  url "https://github.com/Joynik/obsidian-semantic-mcp/archive/refs/tags/v0.41.6.tar.gz"
-  sha256 "ec41ac3a1bda4f27a54046f51a8030cbe7cc4f86501fe6b6029bd2364b6b005a"
+  url "https://github.com/Joynik/obsidian-semantic-mcp/archive/refs/tags/v0.41.8.tar.gz"
+  sha256 "6271f355c0a2e4bd546ee92abbe3d4c50d6604394e5dcd8390a8e352e860c596"
   license "Apache-2.0"
 
   depends_on "uv" => :build
