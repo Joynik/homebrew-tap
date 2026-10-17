@@ -21,6 +21,9 @@ jobs:
         with:
           python-version: "3.14"
 
+      - name: Test OSM formula updater
+        run: python3 -m unittest discover -s update-osm -p "test_*.py"
+
       - name: Check and update OSM formula
         id: update
         env:
