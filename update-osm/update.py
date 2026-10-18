@@ -20,7 +20,7 @@ SOURCE_VERSION_PATTERN = re.compile(
     rf'^  url "https://github\.com/{REPOSITORY}/archive/refs/tags/v(\d+\.\d+\.\d+)\.tar\.gz"$',
     re.MULTILINE,
 )
-CPU_TYPES = {"arm64": 0x0100000C, "x86_64": 0x01000007}
+CPU_TYPES = {"arm64": 0x0100000C}
 
 
 def download(url: str) -> bytes:
@@ -61,30 +61,20 @@ def validate_archive(data: bytes, architecture: str) -> None:
 
 
 def render_formula(version: str, checksums: dict[str, str]) -> str:
-    urls = {
-        architecture: (
-            f"https://github.com/{REPOSITORY}/releases/download/v{version}/"
-            f"osm-v{version}-macos-{architecture}.tar.gz"
-        )
-        for architecture in CPU_TYPES
-    }
+    url = (
+        f"https://github.com/{REPOSITORY}/releases/download/v{version}/"
+        f"osm-v{version}-macos-arm64.tar.gz"
+    )
     return f'''class Osm < Formula
   desc "Local MCP server for semantic search in Obsidian vaults"
   homepage "https://github.com/{REPOSITORY}"
+  url "{url}"
   version "{version}"
+  sha256 "{checksums["arm64"]}"
   license "Apache-2.0"
 
-  depends_on :macos
-
-  on_arm do
-    url "{urls["arm64"]}"
-    sha256 "{checksums["arm64"]}"
-  end
-
-  on_intel do
-    url "{urls["x86_64"]}"
-    sha256 "{checksums["x86_64"]}"
-  end
+  depends_on macos: :tahoe
+  depends_on arch: :arm64
 
   def install
     bin.install "osm"
@@ -120,7 +110,7 @@ def main() -> None:
     assets = {asset["name"]: asset for asset in release["assets"] if asset["state"] == "uploaded"}
     expected = {arch: f"osm-{tag}-macos-{arch}.tar.gz" for arch in CPU_TYPES}
     if not all(name in assets for name in (*expected.values(), "SHA256SUMS")):
-        print(f"OSM {tag} is waiting for both binary assets and SHA256SUMS")
+        print(f"OSM {tag} is waiting for the arm64 binary asset and SHA256SUMS")
         return
     manifest = download(assets["SHA256SUMS"]["browser_download_url"]).decode("utf-8")
     manifest_hashes = {}
@@ -144,7 +134,7 @@ def main() -> None:
     if output := os.environ.get("GITHUB_OUTPUT"):
         with Path(output).open("a") as stream:
             stream.write(f"changed=true\nversion={version}\n")
-    print(f"Updated OSM formula to {version} for arm64 and x86_64")
+    print(f"Updated OSM formula to {version} for macOS arm64")
 
 
 if __name__ == "__main__":

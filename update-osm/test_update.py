@@ -51,7 +51,7 @@ class UpdateOsmTest(unittest.TestCase):
         tag = "v0.47.0"
         files = {
             arch: archive_for(
-                updater.CPU_TYPES["x86_64"] if wrong_architecture and arch == "arm64"
+                0x01000007 if wrong_architecture and arch == "arm64"
                 else updater.CPU_TYPES[arch]
             )
             for arch in updater.CPU_TYPES
@@ -89,21 +89,22 @@ class UpdateOsmTest(unittest.TestCase):
         }
         return downloads, checksums
 
-    def test_updates_both_architectures_without_python_dependencies(self):
+    def test_updates_arm64_without_python_dependencies(self):
         downloads, checksums = self.fixture()
         with patch.object(updater, "download", side_effect=downloads.__getitem__):
             updater.main()
         formula = self.formula.read_text()
         self.assertIn('version "0.47.0"', formula)
-        self.assertIn('depends_on :macos', formula)
+        self.assertIn('depends_on macos: :tahoe', formula)
+        self.assertIn('depends_on arch: :arm64', formula)
         self.assertNotIn('depends_on "python@3.14"', formula)
         self.assertNotIn('depends_on "uv"', formula)
-        for architecture, checksum in checksums.items():
-            self.assertIn(f"osm-v0.47.0-macos-{architecture}.tar.gz", formula)
-            self.assertIn(checksum, formula)
+        self.assertIn("osm-v0.47.0-macos-arm64.tar.gz", formula)
+        self.assertIn(checksums["arm64"], formula)
+        self.assertNotIn("x86_64", formula)
 
     def test_incomplete_release_keeps_previous_formula(self):
-        downloads, _ = self.fixture(missing="osm-v0.47.0-macos-x86_64.tar.gz")
+        downloads, _ = self.fixture(missing="osm-v0.47.0-macos-arm64.tar.gz")
         with patch.object(updater, "download", side_effect=downloads.__getitem__):
             updater.main()
         self.assertEqual(self.formula.read_text(), self.original)
