@@ -1,38 +1,16 @@
 class Osm < Formula
   desc "Local MCP server for semantic search in Obsidian vaults"
   homepage "https://github.com/Joynik/obsidian-semantic-mcp"
-  url "https://github.com/Joynik/obsidian-semantic-mcp/archive/refs/tags/v0.45.1.tar.gz"
-  sha256 "d69b9cfd981d4e62461176d777eb6b28c65ce9305fca39e94d9926adfe5e4eb2"
+  url "https://github.com/Joynik/obsidian-semantic-mcp/releases/download/v0.48.0/osm-v0.48.0-macos-arm64.tar.gz"
+  version "0.48.0"
+  sha256 "01850dacb4015ca2ec8c0a18fe49c2cfad2b58044dea898b83995cd0ee0d9e24"
   license "Apache-2.0"
 
-  depends_on "uv" => :build
-  depends_on "libpq"
-  depends_on "python@3.14"
-
-  def fetch
-    ENV["UV_CACHE_DIR"] = (buildpath/"uv-cache").to_s
-    ENV["UV_PROJECT_ENVIRONMENT"] = (buildpath/"fetch-venv").to_s
-    ENV["UV_NO_MANAGED_PYTHON"] = "1"
-    ENV["UV_NO_BINARY_PACKAGE"] = "psycopg2-binary"
-    ENV["UV_LINK_MODE"] = "copy"
-    ENV.prepend_path "PATH", formula_opt_bin("libpq")
-    system formula_opt_bin("uv")/"uv", "sync", "--frozen", "--no-dev",
-           "--python", formula_opt_bin("python@3.14")/"python3.14"
-  end
+  depends_on macos: :tahoe
+  depends_on arch: :arm64
 
   def install
-    libexec.install "pyproject.toml", "uv.lock", "README.md", "osm_cli.py", "src", "embedding-profiles"
-    ENV["UV_CACHE_DIR"] = (buildpath/"uv-cache").to_s
-    ENV["UV_PROJECT_ENVIRONMENT"] = (libexec/"venv").to_s
-    ENV["UV_NO_MANAGED_PYTHON"] = "1"
-    ENV["UV_NO_BINARY_PACKAGE"] = "psycopg2-binary"
-    ENV["UV_LINK_MODE"] = "copy"
-    ENV.prepend_path "PATH", formula_opt_bin("libpq")
-    cd libexec do
-      system formula_opt_bin("uv")/"uv", "sync", "--offline", "--frozen", "--no-dev",
-             "--python", formula_opt_bin("python@3.14")/"python3.14"
-    end
-    bin.install_symlink libexec/"venv/bin/osm"
+    bin.install "osm"
   end
 
   test do
