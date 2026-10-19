@@ -1,9 +1,9 @@
 class Osm < Formula
   desc "Local MCP server for semantic search in Obsidian vaults"
   homepage "https://github.com/Joynik/obsidian-semantic-mcp"
-  url "https://github.com/Joynik/obsidian-semantic-mcp/releases/download/v0.48.0/osm-v0.48.0-macos-arm64.tar.gz"
-  version "0.48.0"
-  sha256 "01850dacb4015ca2ec8c0a18fe49c2cfad2b58044dea898b83995cd0ee0d9e24"
+  url "https://github.com/Joynik/obsidian-semantic-mcp/releases/download/v0.48.1/osm-v0.48.1-macos-arm64.tar.gz"
+  version "0.48.1"
+  sha256 "bc196dc3824afd762161eb5b4abc3b29e8c61950da054fddff73b4223cd18bda"
   license "Apache-2.0"
 
   depends_on macos: :tahoe
