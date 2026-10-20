@@ -55,7 +55,7 @@ class UpdateMackeepTest(unittest.TestCase):
         checksum = hashlib.sha256(data).hexdigest()
         assets = [
             {
-                "name": f"mackeep-{version}-macos-arm64.tar.gz",
+                "name": f"mackeep-cli-{version}-macos-arm64.tar.gz",
                 "state": "uploaded",
                 "browser_download_url": f"https://assets.example/{version}",
                 "digest": "sha256:" + ("0" * 64 if wrong_digest else checksum),
@@ -83,7 +83,7 @@ class UpdateMackeepTest(unittest.TestCase):
         self.assertIn('version "0.13.0"', formula)
         self.assertIn(
             "https://github.com/Joynik/mackeep/releases/download/0.13.0/"
-            "mackeep-0.13.0-macos-arm64.tar.gz",
+            "mackeep-cli-0.13.0-macos-arm64.tar.gz",
             formula,
         )
         self.assertIn(checksum, formula)
