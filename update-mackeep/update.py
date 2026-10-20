@@ -29,7 +29,7 @@ def download(url: str) -> bytes:
 
 
 def current_version(formula: str) -> str:
-    if "class Mackeep < Formula" not in formula:
+    if "class MackeepCli < Formula" not in formula:
         raise ValueError("Unexpected Mackeep formula")
     version = VERSION_LINE_PATTERN.search(formula)
     if not version:
