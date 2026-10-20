@@ -7,7 +7,7 @@ import re
 from pathlib import Path
 from urllib.request import Request, urlopen
 
-FORMULA = Path(__file__).resolve().parents[1] / "Formula" / "mackeep.rb"
+FORMULA = Path(__file__).resolve().parents[1] / "Formula" / "mackeep-cli.rb"
 REPOSITORY = "Joynik/mackeep"
 API_URL = f"https://api.github.com/repos/{REPOSITORY}/releases/latest"
 VERSION_PATTERN = re.compile(r"^v?(\d+\.\d+\.\d+)\Z")
