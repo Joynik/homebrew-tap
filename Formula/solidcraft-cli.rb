@@ -151,13 +151,6 @@ class SolidcraftCli < Formula
         Visual Mode: OFF (Headless)
         Host:        127.0.0.1
         Port:        7878
-
-      To use Visual Mode, start SolidCraft with:
-        solidcraft --control 7878
-
-      The extension uses the Homebrew-installed CLI.
-      Updating the CLI does not require rebuilding
-      the installed Claude Desktop extension.
     EOS
   end
 
