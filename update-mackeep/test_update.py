@@ -44,7 +44,7 @@ class UpdateMackeepTest(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.addCleanup(self.directory.cleanup)
-        self.formula = Path(self.directory.name) / "mackeep.rb"
+        self.formula = Path(self.directory.name) / "mackeep-cli.rb"
         self.formula.write_text(ORIGINAL)
         self.formula_patch = patch.object(updater, "FORMULA", self.formula)
         self.formula_patch.start()
