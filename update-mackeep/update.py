@@ -11,13 +11,19 @@ FORMULA = Path(__file__).resolve().parents[1] / "Formula" / "mackeep-cli.rb"
 REPOSITORY = "Joynik/mackeep"
 API_URL = f"https://api.github.com/repos/{REPOSITORY}/releases/latest"
 VERSION_PATTERN = re.compile(r"^v?(\d+\.\d+\.\d+)\Z")
-URL_PATTERN = re.compile(
-    r'^  url "(https://github\.com/Joynik/mackeep/releases/download/[^"]+'
-    r'/mackeep[^"]*\.tar\.gz)"$',
-    re.MULTILINE,
+
+# The platforms of the releases, the suffix of the asset of every platform.
+PLATFORMS: tuple[str, ...] = (
+    "macos-arm64",
+    "linux-x86_64",
+    "linux-arm64",
 )
+
 VERSION_LINE_PATTERN = re.compile(r'^  version "([^"]+)"$', re.MULTILINE)
-SHA256_PATTERN = re.compile(r'^  sha256 "([0-9a-f]{64})"$', re.MULTILINE)
+URL_LINE_PATTERN = re.compile(r'^(?P<prefix>\s*url ")(?P<url>[^"]+)(?P<suffix>")$')
+SHA256_LINE_PATTERN = re.compile(
+    r'^(?P<prefix>\s*sha256 ")(?P<sha>[0-9a-f]{64})(?P<suffix>")$',
+)
 
 
 def download(url: str) -> bytes:
@@ -37,15 +43,81 @@ def current_version(formula: str) -> str:
     return version.group(1)
 
 
-def render(formula: str, version: str, checksum: str) -> str:
-    """Update the URL, the version and the checksum of the formula."""
-    url = (
+def asset_url(version: str, platform: str) -> str:
+    """
+    Get the URL of the asset of a platform.
+
+    Args:
+        version (str): The version of the release.
+        platform (str): The suffix of the platform.
+
+    Returns:
+        str
+    """
+    return (
         f"https://github.com/{REPOSITORY}/releases/download/{version}/"
-        f"mackeep-cli-{version}-macos-arm64.tar.gz"
+        f"mackeep-cli-{version}-{platform}.tar.gz"
     )
-    formula = URL_PATTERN.sub(f'  url "{url}"', formula, count=1)
+
+
+def platform_of(url: str) -> str | None:
+    """
+    Get the platform of an asset URL.
+
+    Args:
+        url (str): The URL of the asset.
+
+    Returns:
+        str or None: The suffix of the platform, None when the URL is not
+        the one of a known platform.
+    """
+    for platform in PLATFORMS:
+        if url.endswith(f"-{platform}.tar.gz"):
+            return platform
+    return None
+
+
+def render(formula: str, version: str, checksums: dict[str, str]) -> str:
+    """
+    Update the URLs, the version and the checksums of the formula.
+
+    Every platform of the formula is updated, the rest of the formula is
+    left as it is.
+
+    Args:
+        formula (str): The formula.
+        version (str): The version of the release.
+        checksums (dict): The checksum of the asset of every platform.
+
+    Returns:
+        str
+    """
+    lines: list[str] = formula.splitlines()
+    result: list[str] = []
+    platform: str | None = None
+
+    for line in lines:
+        url = URL_LINE_PATTERN.match(line)
+        if url:
+            found = platform_of(url.group("url"))
+            if found:
+                platform = found
+                line = (
+                    f"{url.group('prefix')}"
+                    f"{asset_url(version, found)}{url.group('suffix')}"
+                )
+        elif platform:
+            checksum = SHA256_LINE_PATTERN.match(line)
+            if checksum:
+                line = (
+                    f"{checksum.group('prefix')}"
+                    f"{checksums[platform]}{checksum.group('suffix')}"
+                )
+                platform = None
+        result.append(line)
+
+    formula = "\n".join(result) + "\n"
     formula = VERSION_LINE_PATTERN.sub(f'  version "{version}"', formula, count=1)
-    formula = SHA256_PATTERN.sub(f'  sha256 "{checksum}"', formula, count=1)
     return formula
 
 
@@ -64,23 +136,27 @@ def main() -> None:
         print(f"Mackeep {installed_version} is current; latest stable release is {version}")
         return
 
-    name = f"mackeep-cli-{version}-macos-arm64.tar.gz"
     assets = {
         asset["name"]: asset
         for asset in release["assets"]
         if asset["state"] == "uploaded"
     }
-    if name not in assets:
-        print(f"Mackeep {version} is waiting for the {name} artifact")
-        return
 
-    asset = assets[name]
-    data = download(asset["browser_download_url"])
-    checksum = hashlib.sha256(data).hexdigest()
-    if asset.get("digest") and asset["digest"] != f"sha256:{checksum}":
-        raise ValueError(f"GitHub asset digest mismatch for {name}")
+    checksums: dict[str, str] = {}
+    for platform in PLATFORMS:
+        name = f"mackeep-cli-{version}-{platform}.tar.gz"
+        if name not in assets:
+            print(f"Mackeep {version} is waiting for the {name} artifact")
+            return
 
-    FORMULA.write_text(render(formula, version, checksum))
+        asset = assets[name]
+        data = download(asset["browser_download_url"])
+        checksum = hashlib.sha256(data).hexdigest()
+        if asset.get("digest") and asset["digest"] != f"sha256:{checksum}":
+            raise ValueError(f"GitHub asset digest mismatch for {name}")
+        checksums[platform] = checksum
+
+    FORMULA.write_text(render(formula, version, checksums))
     if output := os.environ.get("GITHUB_OUTPUT"):
         with Path(output).open("a") as stream:
             stream.write(f"changed=true\nversion={version}\n")

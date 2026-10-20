@@ -17,24 +17,28 @@ ORIGINAL = """# typed: strict
 # frozen_string_literal: true
 
 class MackeepCli < Formula
-  include Language::Python::Virtualenv
-
   desc "Backup and keep your application settings in sync"
   homepage "https://github.com/Joynik/mackeep"
-  url "https://github.com/Joynik/mackeep/releases/download/0.12.1/mackeep-0.12.1.tar.gz"
   version "0.12.1"
-  sha256 "340524b7e253c5532847f71961885f15fc3891d65c12050c0ca1365cafbaa5c8"
   license "GPL-3.0-or-later"
 
-  resource "docopt_ng" do
-    url "https://files.pythonhosted.org/packages/6c/4a/docopt_ng-0.9.0-py3-none-any.whl"
-    sha256 "bfe4c8b03f9fca424c24ee0b4ffa84bf7391cb18c29ce0f6a8227a3b01b81ff9"
+  on_macos do
+    url "https://github.com/Joynik/mackeep/releases/download/0.12.1/mackeep-cli-0.12.1-macos-arm64.tar.gz"
+    sha256 "e342ca7954482f510f8de66112791496ff52a8faa6e39591a20506bb0716cf7e"
   end
 
-  depends_on "python@3.14"
+  on_linux do
+    if Hardware::CPU.arm?
+      url "https://github.com/Joynik/mackeep/releases/download/0.12.1/mackeep-cli-0.12.1-linux-arm64.tar.gz"
+      sha256 "2340b5805594a9829e782f829585abde82d9a06f2eb9bcb964c916dfc200ac67"
+    else
+      url "https://github.com/Joynik/mackeep/releases/download/0.12.1/mackeep-cli-0.12.1-linux-x86_64.tar.gz"
+      sha256 "a814cca37cf478eee4a0c36619cf19570328b746e3a4c2f136658a21e07edf95"
+    end
+  end
 
   def install
-    virtualenv_install_with_resources
+    bin.install "mackeep-cli"
   end
 end
 """
@@ -51,16 +55,21 @@ class UpdateMackeepTest(unittest.TestCase):
         self.addCleanup(self.formula_patch.stop)
 
     def fixture(self, version="0.13.0", missing=False, wrong_digest=False):
-        data = f"sdist of {version}".encode()
-        checksum = hashlib.sha256(data).hexdigest()
-        assets = [
-            {
-                "name": f"mackeep-cli-{version}-macos-arm64.tar.gz",
-                "state": "uploaded",
-                "browser_download_url": f"https://assets.example/{version}",
-                "digest": "sha256:" + ("0" * 64 if wrong_digest else checksum),
-            }
-        ]
+        downloads = {}
+        assets = []
+        for platform in updater.PLATFORMS:
+            data = f"binary of {version} for {platform}".encode()
+            checksum = hashlib.sha256(data).hexdigest()
+            url = f"https://assets.example/{version}/{platform}"
+            downloads[url] = data
+            assets.append(
+                {
+                    "name": f"mackeep-cli-{version}-{platform}.tar.gz",
+                    "state": "uploaded",
+                    "browser_download_url": url,
+                    "digest": "sha256:" + ("0" * 64 if wrong_digest else checksum),
+                },
+            )
         if missing:
             assets = []
         release = {
@@ -69,28 +78,36 @@ class UpdateMackeepTest(unittest.TestCase):
             "prerelease": False,
             "assets": assets,
         }
-        downloads = {
-            updater.API_URL: json.dumps(release).encode(),
-            f"https://assets.example/{version}": data,
-        }
-        return downloads, checksum
+        downloads[updater.API_URL] = json.dumps(release).encode()
+        return downloads, assets
 
     def test_updates_the_version_url_and_checksum(self):
-        downloads, checksum = self.fixture()
+        downloads, assets = self.fixture()
         with patch.object(updater, "download", side_effect=downloads.__getitem__):
             updater.main()
         formula = self.formula.read_text()
         self.assertIn('version "0.13.0"', formula)
-        self.assertIn(
-            "https://github.com/Joynik/mackeep/releases/download/0.13.0/"
-            "mackeep-cli-0.13.0-macos-arm64.tar.gz",
-            formula,
-        )
-        self.assertIn(checksum, formula)
+        for asset in assets:
+            self.assertIn(
+                f"https://github.com/Joynik/mackeep/releases/download/0.13.0/"
+                f"{asset['name']}",
+                formula,
+            )
+            checksum = hashlib.sha256(
+                downloads[asset["browser_download_url"]]
+            ).hexdigest()
+            self.assertIn(checksum, formula)
         # The rest of the formula is untouched
-        self.assertIn('depends_on "python@3.14"', formula)
-        self.assertIn('resource "docopt_ng" do', formula)
-        self.assertIn("virtualenv_install_with_resources", formula)
+        self.assertIn("on_macos do", formula)
+        self.assertIn("on_linux do", formula)
+        self.assertIn('bin.install "mackeep-cli"', formula)
+
+    def test_the_urls_of_the_old_version_are_gone(self):
+        downloads, _ = self.fixture()
+        with patch.object(updater, "download", side_effect=downloads.__getitem__):
+            updater.main()
+        formula = self.formula.read_text()
+        self.assertNotIn("0.12.1/mackeep-cli", formula)
 
     def test_older_release_keeps_the_previous_formula(self):
         downloads, _ = self.fixture(version="0.11.0")
@@ -101,6 +118,17 @@ class UpdateMackeepTest(unittest.TestCase):
     def test_missing_artifact_keeps_the_previous_formula(self):
         downloads, _ = self.fixture(missing=True)
         with patch.object(updater, "download", side_effect=downloads.__getitem__):
+            updater.main()
+        self.assertEqual(self.formula.read_text(), ORIGINAL)
+
+    def test_missing_one_artifact_keeps_the_previous_formula(self):
+        downloads, assets = self.fixture()
+        # The artifact of one platform is missing
+        downloads2 = dict(downloads)
+        release = json.loads(downloads[updater.API_URL])
+        release["assets"] = assets[:-1]
+        downloads2[updater.API_URL] = json.dumps(release).encode()
+        with patch.object(updater, "download", side_effect=downloads2.__getitem__):
             updater.main()
         self.assertEqual(self.formula.read_text(), ORIGINAL)
 
