@@ -13,7 +13,7 @@ API_URL = f"https://api.github.com/repos/{REPOSITORY}/releases/latest"
 VERSION_PATTERN = re.compile(r"^v?(\d+\.\d+\.\d+)\Z")
 URL_PATTERN = re.compile(
     r'^  url "(https://github\.com/Joynik/mackeep/releases/download/[^"]+'
-    r'/mackeep-[^"]+\.tar\.gz)"$',
+    r'/mackeep[^"]*\.tar\.gz)"$',
     re.MULTILINE,
 )
 VERSION_LINE_PATTERN = re.compile(r'^  version "([^"]+)"$', re.MULTILINE)
@@ -41,7 +41,7 @@ def render(formula: str, version: str, checksum: str) -> str:
     """Update the URL, the version and the checksum of the formula."""
     url = (
         f"https://github.com/{REPOSITORY}/releases/download/{version}/"
-        f"mackeep-{version}-macos-arm64.tar.gz"
+        f"mackeep-cli-{version}-macos-arm64.tar.gz"
     )
     formula = URL_PATTERN.sub(f'  url "{url}"', formula, count=1)
     formula = VERSION_LINE_PATTERN.sub(f'  version "{version}"', formula, count=1)
@@ -64,7 +64,7 @@ def main() -> None:
         print(f"Mackeep {installed_version} is current; latest stable release is {version}")
         return
 
-    name = f"mackeep-{version}-macos-arm64.tar.gz"
+    name = f"mackeep-cli-{version}-macos-arm64.tar.gz"
     assets = {
         asset["name"]: asset
         for asset in release["assets"]
