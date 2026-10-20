@@ -7,9 +7,9 @@ class Mackeep < Formula
 
   desc "Backup and keep your application settings in sync"
   homepage "https://github.com/Joynik/mackeep"
-  url "https://github.com/Joynik/mackeep/releases/download/0.12.1/mackeep-0.12.1.tar.gz"
-  version "0.12.1"
-  sha256 "340524b7e253c5532847f71961885f15fc3891d65c12050c0ca1365cafbaa5c8"
+  url "https://github.com/Joynik/mackeep/releases/download/0.13.0/mackeep-0.13.0-macos-arm64.tar.gz"
+  version "0.13.0"
+  sha256 "babd4488e35bdf97e1e451525cb60b1f977c0aae3a0e3a05be3562c639ad9167"
   license "GPL-3.0-or-later"
 
   livecheck do
