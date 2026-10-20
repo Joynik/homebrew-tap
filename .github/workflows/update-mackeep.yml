@@ -32,7 +32,7 @@ jobs:
 
       - name: Validate formula
         if: steps.update.outputs.changed == 'true'
-        run: ruby -c Formula/mackeep.rb
+        run: ruby -c Formula/mackeep-cli.rb
 
       - name: Commit and publish formula
         if: steps.update.outputs.changed == 'true'
