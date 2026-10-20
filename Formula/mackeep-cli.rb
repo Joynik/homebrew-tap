@@ -6,9 +6,9 @@
 class MackeepCli < Formula
   desc "Backup and keep your application settings in sync"
   homepage "https://github.com/Joynik/mackeep"
-  url "https://github.com/Joynik/mackeep/releases/download/0.15.1/mackeep-cli-0.15.1-macos-arm64.tar.gz"
-  version "0.15.1"
-  sha256 "f23458af59dff21a4a314a98490be5b9fd39efb815c2521a504e85967b98ea16"
+  url "https://github.com/Joynik/mackeep/releases/download/0.16.0/mackeep-cli-0.16.0-macos-arm64.tar.gz"
+  version "0.16.0"
+  sha256 "a5381a089ab5d7667e443fb36089513820a57f2945e971bdd8fdececd1d59d8b"
   license "GPL-3.0-or-later"
 
   livecheck do
