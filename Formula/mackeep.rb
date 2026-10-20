@@ -18,9 +18,10 @@ class Mackeep < Formula
   end
 
   # The only runtime dependency of Mackeep
-  resource "docopt_ng",
-           url: "https://files.pythonhosted.org/packages/6c/4a/c3b77fc1a24510b08918b43a473410c0168f6e657118807015f1f1edceea/docopt_ng-0.9.0-py3-none-any.whl",
-           sha256: "bfe4c8b03f9fca424c24ee0b4ffa84bf7391cb18c29ce0f6a8227a3b01b81ff9"
+  resource "docopt_ng" do
+    url "https://files.pythonhosted.org/packages/6c/4a/c3b77fc1a24510b08918b43a473410c0168f6e657118807015f1f1edceea/docopt_ng-0.9.0-py3-none-any.whl"
+    sha256 "bfe4c8b03f9fca424c24ee0b4ffa84bf7391cb18c29ce0f6a8227a3b01b81ff9"
+  end
 
   depends_on "python@3.14"
 
