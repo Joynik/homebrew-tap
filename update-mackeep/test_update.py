@@ -16,7 +16,7 @@ spec.loader.exec_module(updater)
 ORIGINAL = """# typed: strict
 # frozen_string_literal: true
 
-class Mackeep < Formula
+class MackeepCli < Formula
   include Language::Python::Virtualenv
 
   desc "Backup and keep your application settings in sync"
