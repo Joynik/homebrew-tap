@@ -2,7 +2,9 @@
 # frozen_string_literal: true
 
 # Homebrew formula for Mackeep, the backup tool for the application settings.
-class Mackeep < PythonFormula
+class Mackeep < Formula
+  include Language::Python::Virtualenv
+
   desc "Backup and keep your application settings in sync"
   homepage "https://github.com/Joynik/mackeep"
   url "https://github.com/Joynik/mackeep/releases/download/0.12.1/mackeep-0.12.1.tar.gz"
