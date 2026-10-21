@@ -30,11 +30,12 @@ class MackeepCli < Formula
   end
 
   def install
-    # The package is a folder: the binary needs the runtime next to it
-    libexec.install "mackeep-cli"
-    bin.install_symlink libexec/"mackeep-cli/mackeep-cli" => "mackeep-cli"
+    # The package is a folder: the binary needs the runtime next to it.
+    # Homebrew unpacks the folder of the package, so its content is here.
+    libexec.install Dir["*"]
+    bin.install_symlink libexec/"mackeep-cli" => "mackeep-cli"
     # The alias, kept until the desktop version takes the name
-    bin.install_symlink libexec/"mackeep-cli/mackeep-cli" => "mackeep"
+    bin.install_symlink libexec/"mackeep-cli" => "mackeep"
   end
 
   test do
