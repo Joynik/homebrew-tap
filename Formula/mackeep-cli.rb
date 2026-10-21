@@ -6,21 +6,21 @@
 class MackeepCli < Formula
   desc "Backup and keep your application settings in sync"
   homepage "https://github.com/Joynik/mackeep"
-  version "0.17.0"
+  version "0.18.0"
   license "GPL-3.0-or-later"
 
   on_macos do
-    url "https://github.com/Joynik/mackeep/releases/download/0.17.0/mackeep-cli-0.17.0-macos-arm64.tar.gz"
-    sha256 "8d4658ddac886081545e1f49c42ecc231ad7598b5ef910bc5cc5a0d4c27a8c5e"
+    url "https://github.com/Joynik/mackeep/releases/download/0.18.0/mackeep-cli-0.18.0-macos-arm64.tar.gz"
+    sha256 "7c7b3dcbea6d51a9bd3fe9697bb2c856fe6800e7f2a6087472484b7fcbacf0be"
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/Joynik/mackeep/releases/download/0.17.0/mackeep-cli-0.17.0-linux-arm64.tar.gz"
-      sha256 "d56f99d197247f34c0d52a155ed1c08b31d56fdd4b6efd6e9b5fca2532fb1f0a"
+      url "https://github.com/Joynik/mackeep/releases/download/0.18.0/mackeep-cli-0.18.0-linux-arm64.tar.gz"
+      sha256 "f0c41976a9b79b97ccb08e85e4eac9ae5edfa9b88947bc85fd63a43bf2b9d172"
     else
-      url "https://github.com/Joynik/mackeep/releases/download/0.17.0/mackeep-cli-0.17.0-linux-x86_64.tar.gz"
-      sha256 "bd971bef5add15200e35a1fdb0a9fa7c71b4038d589882131ac18ed2ad045ab2"
+      url "https://github.com/Joynik/mackeep/releases/download/0.18.0/mackeep-cli-0.18.0-linux-x86_64.tar.gz"
+      sha256 "9e952471266d364aff82f6b290146b5803ad0e9a1101489fa4fd82184a0029d0"
     end
   end
 
@@ -30,9 +30,11 @@ class MackeepCli < Formula
   end
 
   def install
-    bin.install "mackeep-cli"
+    # The package is a folder: the binary needs the runtime next to it
+    libexec.install "mackeep-cli"
+    bin.install_symlink libexec/"mackeep-cli/mackeep-cli" => "mackeep-cli"
     # The alias, kept until the desktop version takes the name
-    bin.install_symlink "mackeep-cli" => "mackeep"
+    bin.install_symlink libexec/"mackeep-cli/mackeep-cli" => "mackeep"
   end
 
   test do
