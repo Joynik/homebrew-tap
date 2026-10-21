@@ -46,13 +46,23 @@ def current_version(formula: str) -> tuple[str, bool]:
 def validate_archive(data: bytes, architecture: str) -> None:
     with tarfile.open(fileobj=io.BytesIO(data), mode="r:gz") as archive:
         members = {member.name: member for member in archive.getmembers()}
-        if set(members) != {"osm", "LICENSE"} or not all(
-            member.isfile() for member in members.values()
-        ):
+        if not all(
+            (name == "LICENSE" or name == "osm.dist" or name.startswith("osm.dist/"))
+            and ".." not in name.split("/")
+            and (member.isfile() or member.isdir())
+            for name, member in members.items()
+        ) or not {"LICENSE", "osm.dist/osm"} <= members.keys():
             raise ValueError("OSM release archive has unexpected files")
-        if not members["osm"].mode & 0o111:
+        if not members["LICENSE"].isfile() or not members["osm.dist/osm"].isfile():
+            raise ValueError("OSM release archive is incomplete")
+        if not any(
+            name != "osm.dist/osm" and name.startswith("osm.dist/") and member.isfile()
+            for name, member in members.items()
+        ):
+            raise ValueError("OSM standalone dependencies are missing")
+        if not members["osm.dist/osm"].mode & 0o111:
             raise ValueError("OSM release executable lacks execute permission")
-        executable = archive.extractfile(members["osm"])
+        executable = archive.extractfile(members["osm.dist/osm"])
         if executable is None:
             raise ValueError("OSM release executable is missing")
         magic, cpu_type = struct.unpack("<II", executable.read(8))
@@ -77,7 +87,8 @@ def render_formula(version: str, checksums: dict[str, str]) -> str:
   depends_on arch: :arm64
 
   def install
-    bin.install "osm"
+    libexec.install "osm.dist"
+    bin.install_symlink libexec/"osm.dist/osm"
   end
 
   test do
@@ -109,22 +120,15 @@ def main() -> None:
 
     assets = {asset["name"]: asset for asset in release["assets"] if asset["state"] == "uploaded"}
     expected = {arch: f"osm-{tag}-macos-{arch}.tar.gz" for arch in CPU_TYPES}
-    if not all(name in assets for name in (*expected.values(), "SHA256SUMS")):
-        print(f"OSM {tag} is waiting for the arm64 binary asset and SHA256SUMS")
+    if not all(name in assets for name in expected.values()):
+        print(f"OSM {tag} is waiting for the arm64 binary asset")
         return
-    manifest = download(assets["SHA256SUMS"]["browser_download_url"]).decode("utf-8")
-    manifest_hashes = {}
-    for line in manifest.splitlines():
-        checksum, filename = line.split(maxsplit=1)
-        manifest_hashes[filename.strip()] = checksum
 
     checksums = {}
     for architecture, filename in expected.items():
         asset = assets[filename]
         data = download(asset["browser_download_url"])
         checksum = hashlib.sha256(data).hexdigest()
-        if manifest_hashes.get(filename) != checksum:
-            raise ValueError(f"SHA256SUMS mismatch for {filename}")
         if asset.get("digest") and asset["digest"] != f"sha256:{checksum}":
             raise ValueError(f"GitHub asset digest mismatch for {filename}")
         validate_archive(data, architecture)

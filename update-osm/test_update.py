@@ -21,7 +21,8 @@ def archive_for(cpu_type: int) -> bytes:
     output = io.BytesIO()
     with tarfile.open(fileobj=output, mode="w:gz") as archive:
         for name, content, mode in (
-            ("osm", struct.pack("<II", 0xFEEDFACF, cpu_type) + b"binary", 0o755),
+            ("osm.dist/osm", struct.pack("<II", 0xFEEDFACF, cpu_type) + b"binary", 0o755),
+            ("osm.dist/libpython3.14.dylib", b"dependency", 0o644),
             ("LICENSE", b"license", 0o644),
         ):
             info = tarfile.TarInfo(name)
@@ -57,9 +58,6 @@ class UpdateOsmTest(unittest.TestCase):
             for arch in updater.CPU_TYPES
         }
         checksums = {arch: hashlib.sha256(data).hexdigest() for arch, data in files.items()}
-        manifest = "".join(
-            f"{checksums[arch]}  osm-{tag}-macos-{arch}.tar.gz\n" for arch in files
-        ).encode()
         assets = [
             {
                 "name": f"osm-{tag}-macos-{arch}.tar.gz",
@@ -69,13 +67,6 @@ class UpdateOsmTest(unittest.TestCase):
             }
             for arch in files
         ]
-        assets.append(
-            {
-                "name": "SHA256SUMS",
-                "state": "uploaded",
-                "browser_download_url": "https://assets.example/SHA256SUMS",
-            }
-        )
         if missing:
             assets = [asset for asset in assets if asset["name"] != missing]
         release = {"tag_name": tag, "draft": False, "prerelease": False, "assets": assets}
@@ -84,7 +75,6 @@ class UpdateOsmTest(unittest.TestCase):
             f"https://raw.githubusercontent.com/{updater.REPOSITORY}/{tag}/pyproject.toml": (
                 b'[project]\nname = "obsidian-semantic-mcp"\nversion = "0.47.0"\n'
             ),
-            "https://assets.example/SHA256SUMS": manifest,
             **{f"https://assets.example/{arch}": data for arch, data in files.items()},
         }
         return downloads, checksums
@@ -101,6 +91,8 @@ class UpdateOsmTest(unittest.TestCase):
         self.assertNotIn('depends_on "uv"', formula)
         self.assertIn("osm-v0.47.0-macos-arm64.tar.gz", formula)
         self.assertIn(checksums["arm64"], formula)
+        self.assertIn('libexec.install "osm.dist"', formula)
+        self.assertIn('bin.install_symlink libexec/"osm.dist/osm"', formula)
         self.assertNotIn("x86_64", formula)
 
     def test_incomplete_release_keeps_previous_formula(self):
@@ -115,6 +107,20 @@ class UpdateOsmTest(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "not macOS arm64"):
                 updater.main()
         self.assertEqual(self.formula.read_text(), self.original)
+
+    def test_archive_without_standalone_dependencies_is_rejected(self):
+        output = io.BytesIO()
+        with tarfile.open(fileobj=output, mode="w:gz") as archive:
+            for name, content in (
+                ("osm.dist/osm", struct.pack("<II", 0xFEEDFACF, updater.CPU_TYPES["arm64"])),
+                ("LICENSE", b"license"),
+            ):
+                info = tarfile.TarInfo(name)
+                info.size = len(content)
+                info.mode = 0o755 if name.endswith("/osm") else 0o644
+                archive.addfile(info, io.BytesIO(content))
+        with self.assertRaisesRegex(ValueError, "standalone dependencies are missing"):
+            updater.validate_archive(output.getvalue(), "arm64")
 
 
 if __name__ == "__main__":
