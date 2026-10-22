@@ -2,7 +2,7 @@ name: Update Mackeep
 
 on:
   schedule:
-    - cron: "23 */6 * * *"
+    - cron: "22 */6 * * *"
   workflow_dispatch:
 
 permissions:
