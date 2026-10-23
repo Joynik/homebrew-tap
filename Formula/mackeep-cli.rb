@@ -6,21 +6,21 @@
 class MackeepCli < Formula
   desc "Backup and keep your application settings in sync"
   homepage "https://github.com/Joynik/mackeep"
-  version "0.22.1"
+  version "0.23.2"
   license "GPL-3.0-or-later"
 
   on_macos do
-    url "https://github.com/Joynik/mackeep/releases/download/0.22.1/mackeep-cli-0.22.1-macos-arm64.tar.gz"
-    sha256 "d917912acb5b102303dc763e00d915fcaac389419c108f7339da4ec67d71761b"
+    url "https://github.com/Joynik/mackeep/releases/download/0.23.2/mackeep-cli-0.23.2-macos-arm64.tar.gz"
+    sha256 "bd431308084127ba4b3d6cb47b6d656fe70d01d650f54dee6f3a6b6a2bba3953"
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/Joynik/mackeep/releases/download/0.22.1/mackeep-cli-0.22.1-linux-arm64.tar.gz"
-      sha256 "7ed17626240f29d9b71f7dbe41dc86a047cf5d8426bb807a925263f6367d0365"
+      url "https://github.com/Joynik/mackeep/releases/download/0.23.2/mackeep-cli-0.23.2-linux-arm64.tar.gz"
+      sha256 "fd9ee690b100609aa4344e6bcec8bee46e54addf38e8e0fd05ff942d2267a685"
     else
-      url "https://github.com/Joynik/mackeep/releases/download/0.22.1/mackeep-cli-0.22.1-linux-x86_64.tar.gz"
-      sha256 "1a5c42568d6375ae81d35391f399c510167d8869e7c760148d45fb7d2bd72195"
+      url "https://github.com/Joynik/mackeep/releases/download/0.23.2/mackeep-cli-0.23.2-linux-x86_64.tar.gz"
+      sha256 "99e8818a92134a01bd76e63c785bf92eaa2b55a3bdea7966b17b674a00ab303e"
     end
   end
 
