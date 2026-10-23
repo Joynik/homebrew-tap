@@ -22,13 +22,13 @@ jobs:
           python-version: "3.14"
 
       - name: Test Mackeep formula updater
-        run: python3 -m unittest discover -s update-mackeep -p "test_*.py"
+        run: python3 -m unittest discover -s update-mackeep-cli -p "test_*.py"
 
       - name: Check and update Mackeep formula
         id: update
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python3 update-mackeep/update.py
+        run: python3 update-mackeep-cli/update.py
 
       - name: Validate formula
         if: steps.update.outputs.changed == 'true'
