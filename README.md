@@ -65,6 +65,12 @@ Replace `<cask>` or `<formula>` with a package name from the tables above.
 
 ## Updating
 
+Mackeep releases dispatch `update-mackeep-cli.yml` and
+`update-mackeep-desktop.yml`. The CLI workflow updates only its formula; the
+desktop workflow uses the shared cask updater with `CASK_NAME=mackeep`.
+Scheduled CLI checks and daily checks of all casks remain a fallback.
+Both desktop workflows share a concurrency group to serialize cask updates.
+
 Fetch the latest tap changes:
 
 ```bash

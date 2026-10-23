@@ -1,4 +1,4 @@
-name: Update Mackeep
+name: Update Mackeep CLI
 
 on:
   schedule:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: update-mackeep
+  group: update-mackeep-cli
   cancel-in-progress: false
 
 jobs:

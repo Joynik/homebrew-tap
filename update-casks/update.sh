@@ -21,7 +21,16 @@ mark_failed() {
   failed_casks+=("$full_name")
 }
 
-for cask_file in Casks/*.rb; do
+cask_files=(Casks/*.rb)
+if [[ -n "${CASK_NAME:-}" ]]; then
+  if [[ ! "$CASK_NAME" =~ ^[a-z0-9][a-z0-9-]*$ ]] || [[ ! -f "Casks/$CASK_NAME.rb" ]]; then
+    echo "::error::Unknown cask: $CASK_NAME"
+    exit 1
+  fi
+  cask_files=("Casks/$CASK_NAME.rb")
+fi
+
+for cask_file in "${cask_files[@]}"; do
   cask_name="${cask_file##*/}"
   cask_name="${cask_name%.rb}"
   full_name="${TAP_NAME}/${cask_name}"
