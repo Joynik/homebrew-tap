@@ -1,4 +1,4 @@
-cask "pi-desktop" do
+cask "Pi Desktop" do
   version "0.2.1-alpha"
   sha256 "23f6b38a9c63a11bbdcdabe3269bb2aa4c0668073fbfd8b43ac3e361758788e7"
 
@@ -14,5 +14,5 @@ cask "pi-desktop" do
     strategy :github_latest
   end
 
-  app "pi-desktop.app"
+  app "Pi Desktop.app"
 end
