@@ -11,7 +11,22 @@ cask "pi-desktop" do
 
   livecheck do
     url :url
-    strategy :github_latest
+    regex(/^v?(\d+(?:\.\d+)+(?:-[0-9a-z.-]+)?)$/i)
+    # Upstream currently publishes alpha prereleases without a stable latest release.
+    strategy :github_releases do |releases, regex|
+      releases.filter_map do |release|
+        next if release["draft"]
+
+        version = release["tag_name"]&.[](regex, 1)
+        next unless version
+        next unless release.fetch("assets", []).any? do |asset|
+          asset["state"] == "uploaded" &&
+            asset["name"] == "Pi-Desktop-#{version}-mac-arm64.dmg"
+        end
+
+        version
+      end
+    end
   end
 
   app "Pi Desktop.app"

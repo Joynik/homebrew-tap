@@ -19,6 +19,9 @@ with (root / 'calls').open('a') as log:
 if name == 'brew':
     if args[0] == 'livecheck':
         package = args[-1].split('/')[-1]
+        if os.environ.get('LIVECHECK_FAIL') == package:
+            print('upstream livecheck detail')
+            sys.exit(1)
         if os.environ.get('BAD_JSON') == package:
             print('[]')
         else:
@@ -86,6 +89,16 @@ class WorkflowTests(unittest.TestCase):
         self.assertTrue(any(c[:3] == ['gh', 'pr', 'create'] for c in calls))
         self.assertFalse(any('--force' in c and 'push' in c for c in calls))
 
+    def test_formula_network_commands_use_explicit_credentials(self):
+        result, calls = self.run_updater(PACKAGE_KIND='formula', PACKAGE_NAME='qdrant')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        network = [c for c in calls if c[0] == 'git' and ('fetch' in c or 'push' in c)]
+        self.assertEqual(len(network), 2)
+        for call in network:
+            self.assertIn('credential.helper=', call)
+            self.assertIn('credential.helper=!gh auth git-credential', call)
+            self.assertNotIn(self.env['GH_TOKEN'], call)
+
     def test_failed_download_cleans_up_and_never_publishes(self):
         result, calls = self.run_updater(PACKAGE_KIND='formula', DOWNLOAD_FAIL='1')
         self.assertEqual(result.returncode, 1)
@@ -110,6 +123,12 @@ class WorkflowTests(unittest.TestCase):
             result, calls = self.run_updater(PACKAGE_KIND=kind, BAD_JSON='qdrant')
             for name in names:
                 self.assertTrue(any(f'joynik/tap/{name}' in c for c in calls))
+
+    def test_failed_livecheck_preserves_upstream_diagnostic(self):
+        result, calls = self.run_updater(PACKAGE_KIND='formula', LIVECHECK_FAIL='qdrant')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('upstream livecheck detail', result.stdout)
+        self.assertTrue(any('joynik/tap/solidcraft-cli' in c for c in calls))
 
     def test_unknown_package_is_rejected(self):
         result = subprocess.run(['bash', str(ROOT / 'update-packages/update.sh')],

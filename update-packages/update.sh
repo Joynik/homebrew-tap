@@ -7,6 +7,12 @@ trap 'echo "::error::Unexpected script failure at line ${LINENO} (${full_name:-i
 : "${GITHUB_REPOSITORY:?GitHub repository is required}"
 : "${GH_TOKEN:?GitHub CLI token is required}"
 
+# GH_TOKEN authenticates gh, not Git; apply its helper to each network command.
+git_with_auth() {
+  GIT_TERMINAL_PROMPT=0 git -c credential.helper= \
+    -c 'credential.helper=!gh auth git-credential' "$@"
+}
+
 # Only select the updater's exact branch in this repository, targeting main.
 find_update_pr() {
   gh pr list --repo "$GITHUB_REPOSITORY" --state "${2:-open}" --base main \
@@ -46,7 +52,7 @@ create_update_pr() (
   # Isolate changes and cleanup even when a download or validation fails.
   worktree=$(mktemp -d) || exit 1
   trap 'git worktree remove --force "$worktree" >/dev/null 2>&1 || rmdir "$worktree" 2>/dev/null || true' EXIT
-  git fetch origin main || exit 1
+  git_with_auth fetch origin main || exit 1
   git worktree add -b "$branch" "$worktree" origin/main || exit 1
   python3 update-packages/formula.py "$worktree/$package_file" "$version" || exit 1
   ruby -c "$worktree/$package_file" || exit 1
@@ -55,7 +61,7 @@ create_update_pr() (
   git -C "$worktree" -c user.name='github-actions[bot]' \
     -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
     commit -m "$package_name $version" || exit 1
-  git -C "$worktree" push origin "$branch" || exit 1
+  git_with_auth -C "$worktree" push origin "$branch" || exit 1
   gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" \
     --title "$package_name $version" --body "Update all release archives and SHA256 checksums for $package_name." || exit 1
 )
@@ -67,6 +73,7 @@ for package_file in "${package_files[@]}"; do
   echo "::group::${full_name}"
 
   if ! result=$(brew livecheck "--$kind" --json "$full_name"); then
+    printf '%s\n' "$result"
     echo "::error::Version check failed for ${full_name}"
     mark_failed
   elif ! jq -e 'type == "array" and length == 1 and .[0].version.latest != null and .[0].version.outdated != null' <<<"$result" >/dev/null; then
@@ -100,7 +107,7 @@ for package_file in "${package_files[@]}"; do
         echo "::endgroup::"
         continue
       fi
-      if [[ -n "$closed_pr" ]] && [[ -n "$(git ls-remote --heads origin "refs/heads/${branch}")" ]]; then
+      if [[ -n "$closed_pr" ]] && [[ -n "$(git_with_auth ls-remote --heads origin "refs/heads/${branch}")" ]]; then
         IFS=$'\t' read -r closed_number closed_sha <<<"$closed_pr"
         echo "Reopening update PR #${closed_number} for ${full_name} ${version}."
         if ! gh pr reopen "$closed_number" --repo "$GITHUB_REPOSITORY"; then
