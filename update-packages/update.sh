@@ -15,28 +15,58 @@ find_update_pr() {
 }
 
 failed=0
-failed_casks=()
+failed_packages=()
 mark_failed() {
   failed=1
-  failed_casks+=("$full_name")
+  failed_packages+=("$full_name")
 }
 
-cask_files=(Casks/*.rb)
-if [[ -n "${CASK_NAME:-}" ]]; then
-  if [[ ! "$CASK_NAME" =~ ^[a-z0-9][a-z0-9-]*$ ]] || [[ ! -f "Casks/$CASK_NAME.rb" ]]; then
-    echo "::error::Unknown cask: $CASK_NAME"
+case "${PACKAGE_KIND:-cask}" in
+  cask) directory=Casks ;;
+  formula) directory=Formula ;;
+  *) echo "::error::PACKAGE_KIND must be cask or formula"; exit 1 ;;
+esac
+kind="${PACKAGE_KIND:-cask}"
+shopt -s nullglob
+package_files=("$directory"/*.rb)
+if [[ -n "${PACKAGE_NAME:-}" ]]; then
+  if [[ ! "$PACKAGE_NAME" =~ ^[a-z0-9][a-z0-9-]*$ ]] || [[ ! -f "$directory/$PACKAGE_NAME.rb" ]]; then
+    echo "::error::Unknown $kind: $PACKAGE_NAME"
     exit 1
   fi
-  cask_files=("Casks/$CASK_NAME.rb")
+  package_files=("$directory/$PACKAGE_NAME.rb")
 fi
 
-for cask_file in "${cask_files[@]}"; do
-  cask_name="${cask_file##*/}"
-  cask_name="${cask_name%.rb}"
-  full_name="${TAP_NAME}/${cask_name}"
+create_update_pr() (
+  set -e
+  if [[ "$kind" == cask ]]; then
+    brew bump-cask-pr --version="$version" --no-audit --no-style --no-browse --no-fork "$full_name" || exit 1
+    return
+  fi
+  # Isolate changes and cleanup even when a download or validation fails.
+  worktree=$(mktemp -d) || exit 1
+  trap 'git worktree remove --force "$worktree" >/dev/null 2>&1 || rmdir "$worktree" 2>/dev/null || true' EXIT
+  git fetch origin main || exit 1
+  git worktree add -b "$branch" "$worktree" origin/main || exit 1
+  python3 update-packages/formula.py "$worktree/$package_file" "$version" || exit 1
+  ruby -c "$worktree/$package_file" || exit 1
+  git -C "$worktree" diff --check || exit 1
+  git -C "$worktree" add -- "$package_file" || exit 1
+  git -C "$worktree" -c user.name='github-actions[bot]' \
+    -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+    commit -m "$package_name $version" || exit 1
+  git -C "$worktree" push origin "$branch" || exit 1
+  gh pr create --repo "$GITHUB_REPOSITORY" --base main --head "$branch" \
+    --title "$package_name $version" --body "Update all release archives and SHA256 checksums for $package_name." || exit 1
+)
+
+for package_file in "${package_files[@]}"; do
+  package_name="${package_file##*/}"
+  package_name="${package_name%.rb}"
+  full_name="${TAP_NAME}/${package_name}"
   echo "::group::${full_name}"
 
-  if ! result=$(brew livecheck --cask --json "$full_name"); then
+  if ! result=$(brew livecheck "--$kind" --json "$full_name"); then
     echo "::error::Version check failed for ${full_name}"
     mark_failed
   elif ! jq -e 'type == "array" and length == 1 and .[0].version.latest != null and .[0].version.outdated != null' <<<"$result" >/dev/null; then
@@ -45,7 +75,16 @@ for cask_file in "${cask_files[@]}"; do
     mark_failed
   elif jq -e '.[0].version.outdated == true' <<<"$result" >/dev/null; then
     version=$(jq -r '.[0].version.latest' <<<"$result")
-    branch="bump-${cask_name}-${version}"
+    if [[ ! "$version" =~ ^[0-9][a-zA-Z0-9.,_+-]*$ ]]; then
+      echo "::error::Unsafe or unsupported version: $version"
+      mark_failed
+      echo "::endgroup::"
+      continue
+    fi
+    branch="bump-${package_name}-${version}"
+    if [[ "$kind" == formula ]]; then
+      branch="bump-formula-${package_name}-${version}"
+    fi
     if ! pr=$(find_update_pr "$branch"); then
       echo "::error::PR lookup failed for ${full_name}"
       mark_failed
@@ -73,7 +112,7 @@ for cask_file in "${cask_files[@]}"; do
         pr="$closed_pr"
       fi
     fi
-    if [[ -z "$pr" ]] && ! brew bump-cask-pr --version="$version" --no-audit --no-style --no-browse --no-fork "$full_name"; then
+    if [[ -z "$pr" ]] && ! create_update_pr; then
       echo "::error::Update PR failed for ${full_name}"
       mark_failed
       echo "::endgroup::"
@@ -111,9 +150,9 @@ for cask_file in "${cask_files[@]}"; do
 done
 
 if (( failed != 0 )); then
-  echo "::error::Cask updates failed: ${failed_casks[*]}"
+  echo "::error::Package updates failed: ${failed_packages[*]}"
 else
-  echo "All cask updates completed successfully."
+  echo "All package updates completed successfully."
 fi
 
 exit "$failed"

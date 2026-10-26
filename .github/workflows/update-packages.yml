@@ -1,0 +1,49 @@
+name: Shared package updater
+
+on:
+  workflow_call:
+    inputs:
+      kind:
+        required: true
+        type: string
+      package:
+        default: ""
+        type: string
+    secrets:
+      HOMEBREW_TAP_TOKEN:
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: tap-package-updates
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: macos-15-intel
+    timeout-minutes: 45
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+      HOMEBREW_NO_ANALYTICS: "1"
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Set up Homebrew
+        id: homebrew
+        uses: Homebrew/actions/setup-homebrew@main
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      - name: Test shared updater and artifact validators
+        run: python3 -m unittest discover -s update-packages -p 'test_*.py'
+      - name: Check versions and publish update PRs
+        env:
+          PACKAGE_KIND: ${{ inputs.kind }}
+          PACKAGE_NAME: ${{ inputs.package }}
+          TAP_NAME: ${{ steps.homebrew.outputs.tap-name }}
+          HOMEBREW_GITHUB_API_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+          GH_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+        run: bash update-packages/update.sh

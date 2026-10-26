@@ -69,11 +69,106 @@ Replace `<cask>` or `<formula>` with a package name from the tables above.
 
 ## Updating
 
-Mackeep releases dispatch `update-mackeep-cli.yml` and
-`update-mackeep-desktop.yml`. The CLI workflow updates only its formula; the
-desktop workflow uses the shared cask updater with `CASK_NAME=mackeep`.
-Scheduled CLI checks and daily checks of all casks remain a fallback.
-Both desktop workflows share a concurrency group to serialize cask updates.
+The tap has two bulk workflows:
+
+- **Update All Casks** (`update-all-casks.yml`): daily at 04:00 UTC or manually.
+- **Update All Formulae** (`update-all-formulae.yml`): daily at 03:00 UTC or manually.
+
+They discover every `Casks/*.rb` or `Formula/*.rb` automatically, including
+Mackeep and OSM. There is no package list to maintain. Both use the reusable
+`update-packages.yml` workflow and `update-packages/update.sh`.
+
+Each package is checked with `brew livecheck`. Unchanged packages require no
+archive downloads. Updates get a separate PR, followed by a merge/auto-merge
+request under the repository's rules. One failed package does not stop checks
+for the others; the overall run still fails and names the failures.
+
+The following manual entry points remain available for project release dispatches:
+
+- `update-osm.yml`: OSM only.
+- `update-mackeep-cli.yml`: Mackeep CLI only.
+- `update-mackeep-desktop.yml`: Mackeep Desktop only.
+
+Their filenames are unchanged. They call the same reusable workflow with a package
+name; downloads, checksums and formula editing are implemented once. GitHub release
+assets are checked before any archive downloads, and GitHub asset digests are
+verified when provided. OSM additionally validates its project version and standalone
+archive through `update-packages/osm.py`, including in bulk runs. Their individual schedules are replaced by the daily bulk
+checks. All entry points share a concurrency group to avoid concurrent writes.
+GitHub concurrency may replace an older pending run when more runs are queued;
+the running update is not cancelled.
+
+All updater entry points require the existing `HOMEBREW_TAP_TOKEN`
+secret with repository Contents and Pull requests write access. Repository rules
+must permit the updater's merge path. The standalone OSM and Mackeep CLI workflows now use the same token and PR/merge
+path as the bulk workflows; they no longer publish direct commits to main.
+
+### Adding a formula
+
+Create `Formula/<name>.rb`; no new workflow or Python updater is needed for a
+versioned archive formula. For example (replace the repository, version, SHA256,
+license, executable and description with real values):
+
+```ruby
+class ExampleCli < Formula
+  desc "Example command-line tool"
+  homepage "https://github.com/owner/example"
+  version "1.2.3"
+  url "https://github.com/owner/example/releases/download/v#{version}/example-#{version}-macos-arm64.tar.gz"
+  sha256 "REPLACE_WITH_THE_REAL_64_CHARACTER_SHA256"
+  license "MIT"
+
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
+
+  def install
+    bin.install "example"
+  end
+
+  test do
+    system bin/"example", "--version"
+  end
+end
+```
+
+Use `on_macos` / `on_linux` and `on_arm` / `on_intel` blocks when upstream provides
+multiple archives. Each `url` must be immediately followed by its `sha256`
+(an intervening `version` line is also supported). Use one explicit top-level
+`version`; URLs must contain that version literally or through `#{version}`.
+Use `url :stable` in the livecheck block. The example targets a macOS ARM64
+archive; add appropriate architecture/OS requirements or other platform archives
+for the actual project.
+
+The shared formula updater downloads all declared platform archives over HTTPS,
+streams SHA256 calculation with at most three concurrent downloads, and changes
+the formula only after every download succeeds. It preserves installation,
+service and test code, checks Ruby syntax and the diff, and prepares the update
+in a temporary Git worktree. Download requests never include the repository token.
+It does not install or execute upstream binaries during updates.
+
+This template covers versioned source or binary archives, including the current
+Qdrant and SolidCraft CLI formulae. Complex recipes with resources, patches,
+bottles, mirrors, HEAD or explicit stable blocks fail with an explanatory error
+and require review rather than guessing how to update them. A release that changes
+its asset names or installation layout also requires a formula adjustment.
+
+For casks, add `Casks/<name>.rb` with a working `livecheck` (or working automatic
+version detection); Homebrew's `bump-cask-pr` handles the update.
+
+Check a new package before running the bulk workflow:
+
+```bash
+brew livecheck --formula --json joynik/tap/<formula>
+brew livecheck --cask --json joynik/tap/<cask>
+```
+
+Run updater regression checks locally (Python 3.11+ and `bash`, `jq`, `ruby` required):
+
+```bash
+python3 -m unittest discover -s update-packages -p 'test_*.py'
+```
 
 Fetch the latest tap changes:
 

@@ -9,6 +9,11 @@ class Osm < Formula
   depends_on macos: :tahoe
   depends_on arch: :arm64
 
+  livecheck do
+    url :stable
+    strategy :github_latest
+  end
+
   def install
     libexec.install "osm.dist"
     bin.install_symlink libexec/"osm.dist/osm"

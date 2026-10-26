@@ -1,44 +1,16 @@
 name: Update OSM
 
 on:
-  schedule:
-    - cron: "20 */6 * * *"
   workflow_dispatch:
 
 permissions:
   contents: write
-
-concurrency:
-  group: update-osm
-  cancel-in-progress: false
+  pull-requests: write
 
 jobs:
   update:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.14"
-
-      - name: Test OSM formula updater
-        run: python3 -m unittest discover -s update-osm -p "test_*.py"
-
-      - name: Check and update OSM formula
-        id: update
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        run: python3 update-osm/update.py
-
-      - name: Validate formula
-        if: steps.update.outputs.changed == 'true'
-        run: ruby -c Formula/osm.rb
-
-      - name: Commit and publish formula
-        if: steps.update.outputs.changed == 'true'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add Formula/osm.rb
-          git commit -m "osm ${{ steps.update.outputs.version }}"
-          git push
+    uses: ./.github/workflows/update-packages.yml
+    with:
+      kind: formula
+      package: osm
+    secrets: inherit

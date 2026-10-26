@@ -1,0 +1,17 @@
+name: Update All Formulae
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    uses: ./.github/workflows/update-packages.yml
+    with:
+      kind: formula
+    secrets: inherit
