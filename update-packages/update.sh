@@ -134,8 +134,9 @@ for package_file in "${package_files[@]}"; do
         --auto --squash --match-head-commit "$head_sha" 2>&1); then
         echo "$merge_output"
         echo "PR #${pr_number}: merge or auto-merge request accepted by GitHub."
-      elif [[ "$merge_output" == *"Branch does not have required protected branch rules"* ]]; then
-        echo "No required branch rules: merging PR #${pr_number} now."
+      elif [[ "$merge_output" == *"Branch does not have required protected branch rules"* ||
+              "$merge_output" == *"Pull request is in clean status"* ]]; then
+        echo "Auto-merge is not needed: attempting to merge PR #${pr_number} now."
         if ! gh pr merge "$pr_number" --repo "$GITHUB_REPOSITORY" \
           --squash --match-head-commit "$head_sha"; then
           echo "::error::Could not merge PR #${pr_number}"

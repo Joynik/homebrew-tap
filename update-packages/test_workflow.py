@@ -35,7 +35,10 @@ elif name == 'gh':
     elif args[:2] == ['pr', 'create']:
         (root / 'pr').touch()
     elif args[:2] == ['pr', 'merge'] and '--auto' in args and os.environ.get('MERGE_FALLBACK'):
-        print('Branch does not have required protected branch rules')
+        print(os.environ.get('MERGE_ERROR', 'Branch does not have required protected branch rules'))
+        sys.exit(1)
+    elif args[:2] == ['pr', 'merge'] and '--auto' not in args and os.environ.get('DIRECT_MERGE_FAIL'):
+        print('Pull request is blocked by branch protection')
         sys.exit(1)
 elif name == 'git':
     if args[:2] == ['worktree', 'add']:
@@ -80,6 +83,30 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertTrue(any(c[:2] == ['brew', 'bump-cask-pr'] for c in calls))
         self.assertEqual(sum(c[:3] == ['gh', 'pr', 'merge'] for c in calls), 2)
+
+    def test_clean_pr_falls_back_to_merge_with_matching_head(self):
+        result, calls = self.run_updater(
+            PACKAGE_KIND='cask', MERGE_FALLBACK='1',
+            MERGE_ERROR='GraphQL: Pull request Pull request is in clean status (enablePullRequestAutoMerge)')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        merges = [c for c in calls if c[:3] == ['gh', 'pr', 'merge']]
+        self.assertEqual(len(merges), 2)
+        self.assertNotIn('--auto', merges[1])
+        self.assertIn('--squash', merges[1])
+        self.assertEqual(merges[1][-2:], ['--match-head-commit', 'abc123'])
+
+    def test_clean_pr_direct_merge_failure_is_reported(self):
+        result, calls = self.run_updater(
+            PACKAGE_KIND='cask', MERGE_FALLBACK='1', DIRECT_MERGE_FAIL='1',
+            MERGE_ERROR='GraphQL: Pull request Pull request is in clean status (enablePullRequestAutoMerge)')
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('Could not merge PR #123', result.stdout)
+
+    def test_unrelated_auto_merge_error_does_not_attempt_direct_merge(self):
+        result, calls = self.run_updater(
+            PACKAGE_KIND='cask', MERGE_FALLBACK='1', MERGE_ERROR='GraphQL: Resource not accessible')
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(sum(c[:3] == ['gh', 'pr', 'merge'] for c in calls), 1)
 
     def test_formula_creation_is_isolated_and_no_force_push(self):
         result, calls = self.run_updater(PACKAGE_KIND='formula', PACKAGE_NAME='qdrant')
