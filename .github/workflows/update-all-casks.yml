@@ -2,7 +2,8 @@ name: Update All Casks
 
 on:
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "43 6 * * *"
+      timezone: "Europe/Kyiv"
   workflow_dispatch:
 
 permissions:
