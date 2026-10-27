@@ -1,8 +1,8 @@
 cask "voicestudio" do
-  version "0.5.6"
-  sha256 "821d011faf255cd6315dba969ce1572ef850ae6159fcc55d94dcb9fe86259834"
+  version "0.5.7"
+  sha256 "8db7a16f35af1e4eaca25c389d376acc86b3885f30d1982f5fd6497953f888a0"
 
-  url "https://github.com/debpalash/VoiceStudio/releases/download/v#{version}/VoiceStudio-Electron-#{version}-mac-arm64.dmg"
+  url "https://github.com/debpalash/VoiceStudio/releases/download/v#{version}/VoiceStudio-#{version}-mac-arm64.dmg"
   name "VoiceStudio"
   desc "Open-source voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages."
   homepage "https://github.com/debpalash/VoiceStudio/"
@@ -14,5 +14,5 @@ cask "voicestudio" do
     strategy :github_latest
   end
 
-  app "voicestudio.app"
+  app "VoiceStudio.app"
 end
