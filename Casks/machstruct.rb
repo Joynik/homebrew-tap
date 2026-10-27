@@ -1,6 +1,6 @@
 cask "machstruct" do
-  version "2.1.3"
-  sha256 "b15bda41a82c0e96c3780fe1bfd59d3252fa828726347df370b737738d57d65d"
+  version "2.2.0"
+  sha256 "5e3231ec404a7235618501d653fcca7a7fbbdec605d0997a4593b50994b64508"
 
   url "https://github.com/lustech/MachStruct/releases/download/v#{version}/MachStruct-v#{version}.dmg"
   name "MachStruct"
