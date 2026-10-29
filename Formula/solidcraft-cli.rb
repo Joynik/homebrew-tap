@@ -4,9 +4,9 @@ require "json"
 class SolidcraftCli < Formula
   desc "Headless CLI and MCP server for SolidCraft parametric CAD"
   homepage "https://github.com/tangency-labs/solidcraft"
-  version "0.25.1"
+  version "0.26.0"
   url "https://github.com/tangency-labs/solidcraft/releases/download/v#{version}/solidcraft-cli-#{version}-macos-universal.zip"
-  sha256 "44ee5a4d7177c19f8f0109abf8209550c1188e4df0a76e3876c25ebcbbfe38b8"
+  sha256 "774db0c2360619b28461114a5ca5799ff9c5bf603458dce735a67dbcd9b56b45"
   license any_of: ["MIT", "Apache-2.0"]
 
   livecheck do
