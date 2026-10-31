@@ -25,19 +25,15 @@ macOS applications installed through Homebrew Cask.
 
 | Package | Description | Install |
 | --- | --- | --- |
-| [atoll](https://github.com/Ebullioscopic/Atoll) | Dynamic Island | `brew install --cask joynik/tap/atoll` |
 | [cardinal](https://github.com/franciscoxc/cardinal) | Fastest file searching tool for macOS | `brew install --cask joynik/tap/cardinal` |
 | [codeburn](https://github.com/getagentseal/codeburn/) | See where your AI spend goes. | `brew install --cask joynik/tap/codeburn` |
 | [imgo](https://github.com/meowtec/imgo) | Image optimization app for macOS. | `brew install --cask joynik/tap/imgo` |
 | [machstruct](https://github.com/lustech/MachStruct) | Native macOS viewer and editor for JSON, XML, YAML, CSV | `brew install --cask joynik/tap/machstruct` |
 | [mackeep](https://github.com/Joynik/mackeep) | Backup and keep your application settings in sync | `brew install --cask joynik/tap/mackeep` |
 | [magnitude](https://github.com/magnitudedev/magnitude/) | Run open models as fast as your hardware allows. | `brew install --cask joynik/tap/magnitude` |
-| [mtarsier](https://github.com/mcp360/mTarsier) | The Open Source MCP & Skill Manager for Claude, Cursor, VS Code & any AI client | `brew install --cask joynik/tap/mtarsier` |
 | [omniroute](https://github.com/diegosouzapw/OmniRoute/) | The Free AI Gateway | `brew install --cask joynik/tap/omniroute` |
-| [screentranslate](https://github.com/hcmhcs/screenTranslate) | Translate any text on your Mac screen — capture or select. | `brew install --cask joynik/tap/screentranslate` |
 | [solidcraft](https://github.com/tangency-labs/solidcraft/) | Parametric 3D CAD application built in pure Rust. Desktop, web, and automation through MCP. | `brew install --cask joynik/tap/solidcraft` |
 | [virustotal](https://github.com/Jerry23011/VirusTotal-macOS/) | An elegant VirusTotal client built with Swift and SwiftUI | `brew install --cask joynik/tap/virustotal` |
-| [voicebox](https://github.com/jamiepine/voicebox/) | The open-source AI voice studio. Clone, dictate, create. | `brew install --cask joynik/tap/voicebox` |
 | [voicestudio](https://github.com/debpalash/VoiceStudio/) | Open-source voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages. | `brew install --cask joynik/tap/voicestudio` |
 
 ## Available formulae
@@ -89,19 +85,18 @@ The following manual entry points remain available for project release dispatche
 - `update-mackeep-cli.yml`: Mackeep CLI only.
 - `update-mackeep-desktop.yml`: Mackeep Desktop only.
 
-Their filenames are unchanged. They call the same reusable workflow with a package
-name; downloads, checksums and formula editing are implemented once. GitHub release
-assets are checked before any archive downloads, and GitHub asset digests are
-verified when provided. OSM additionally validates its project version and standalone
-archive through `update-packages/osm.py`, including in bulk runs. Their individual schedules are replaced by the daily bulk
-checks. All entry points share a concurrency group to avoid concurrent writes.
-GitHub concurrency may replace an older pending run when more runs are queued;
-the running update is not cancelled.
+Their filenames are unchanged. They call the same reusable workflow with a package name; downloads,
+checksums and formula editing are implemented once. GitHub release assets are checked before any
+archive downloads, and GitHub asset digests are verified when provided. OSM additionally validates
+its project version and standalone archive through `update-packages/osm.py`, including in bulk runs.
+Their individual schedules are replaced by the daily bulk checks. All entry points share a
+concurrency group to avoid concurrent writes. GitHub concurrency may replace an older pending run
+when more runs are queued; the running update is not cancelled.
 
-All updater entry points require the existing `HOMEBREW_TAP_TOKEN`
-secret with repository Contents and Pull requests write access. Repository rules
-must permit the updater's merge path. The standalone OSM and Mackeep CLI workflows now use the same token and PR/merge
-path as the bulk workflows; they no longer publish direct commits to main.
+All updater entry points require the existing `HOMEBREW_TAP_TOKEN` secret with repository Contents
+and Pull requests write access. Repository rules must permit the updater's merge path. The
+standalone OSM and Mackeep CLI workflows now use the same token and PR/merge path as the bulk
+workflows; they no longer publish direct commits to main.
 
 ### Adding a formula
 
