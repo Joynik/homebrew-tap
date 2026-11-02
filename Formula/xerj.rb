@@ -34,10 +34,6 @@ class Xerj < Formula
     strategy :github_latest
   end
 
-  def install
-    bin.install "xerj"
-  end
-
   def caveats
     <<~EOS
       XERJ is installed.
@@ -56,6 +52,60 @@ class Xerj < Formula
         https://github.com/xerj-org/xerj
     EOS
   end
+
+  def install
+    bin.install "xerj"
+
+    (libexec/"xerj-launch").write <<~'SH'
+      #!/bin/sh
+      set -eu
+
+      CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/xerj"
+      CONFIG_FILE="$CONFIG_DIR/xerj.toml"
+
+      mkdir -p "$CONFIG_DIR"
+
+      if [ ! -f "$CONFIG_FILE" ]; then
+        cat > "$CONFIG_FILE" <<'TOML'
+  # XERJ Configuration
+
+  [server]
+  # Required: set your data directory before starting.
+  # data_dir = "/path/to/xerj/data"
+
+  bind_address = "127.0.0.1"
+  rest_port = 8080
+  grpc_port = 8081
+  es_compat_port = 9200
+
+  [auth]
+  enabled = true
+  TOML
+      fi
+
+      if ! grep -Eq '^[[:space:]]*data_dir[[:space:]]*=[[:space:]]*"[^"]+"' "$CONFIG_FILE"; then
+        echo "XERJ: configure data_dir in $CONFIG_FILE" >&2
+        exit 1
+      fi
+
+      exec "$(dirname "$0")/../bin/xerj" --config "$CONFIG_FILE"
+    SH
+
+    chmod 0755, libexec/"xerj-launch"
+  end
+
+  post_install_steps do
+    mkdir_p "log", base: :var
+  end
+
+  service do
+    run [opt_libexec/"xerj-launch"]
+    keep_alive true
+    run_at_load true
+    log_path var/"log/xerj.log"
+    error_log_path var/"log/xerj-error.log"
+  end
+
 
   test do
     assert_match version.to_s, shell_output("#{bin}/xerj --version")
