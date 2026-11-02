@@ -66,7 +66,7 @@ class Xerj < Formula
       mkdir -p "$CONFIG_DIR"
 
       if [ ! -f "$CONFIG_FILE" ]; then
-        cat > "$CONFIG_FILE" <<'TOML'
+        cat > "$CONFIG_FILE" <<TOML
   # XERJ Configuration
 
   [server]
