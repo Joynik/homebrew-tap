@@ -71,7 +71,7 @@ class Xerj < Formula
 
   [server]
   # Required: set your data directory before starting.
-  # data_dir = "/path/to/xerj/data"
+  data_dir = "$HOME/.xerj"
 
   bind_address = "127.0.0.1"
   rest_port = 8080
