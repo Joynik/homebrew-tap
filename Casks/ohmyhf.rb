@@ -14,5 +14,5 @@ cask "ohmyhf" do
     strategy :github_latest
   end
 
-  app "ohmyhf.app"
+  app "Oh My HuggingFace.app"
 end
