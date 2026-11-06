@@ -1,30 +1,30 @@
 class Xerj < Formula
   desc "Local-first search engine and MCP server for AI agents"
   homepage "https://xerj.org"
-  version "1.0.0-rc.100"
+  version "1.0.0-rc.101"
   license "Apache-2.0"
 
   on_macos do
     on_arm do
       url "https://github.com/xerj-org/xerj/releases/download/v#{version}/xerj-#{version}-aarch64-apple-darwin.tar.gz"
-      sha256 "c88fdcb99c4155d2f7260138c3a5898d0f3cf6b07cd208895137ff03c52b9d1a"
+      sha256 "eb2113ec8a7d3057d5ed97d91a52900b804108db173ba213292506926e6b790f"
     end
 
     on_intel do
       url "https://github.com/xerj-org/xerj/releases/download/v#{version}/xerj-#{version}-x86_64-apple-darwin.tar.gz"
-      sha256 "30f6148c68c584ab990eeaa9bc9a05209c2ba2374a5ae90651be17f588edac91"
+      sha256 "49327e1931515d1c5ac66b9b06769f13dd1271c55ad279c6a7501b9e89a6ed76"
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/xerj-org/xerj/releases/download/v#{version}/xerj-#{version}-aarch64-unknown-linux-musl.tar.gz"
-      sha256 "611962942ed13337e66a8552555e9c141e48bd254d13cbd396ffe13b390c5e55"
+      sha256 "b17caa7eedf3ef1d7b9809bf3ba134daaa60224aa6175367355a8f493cb33918"
     end
 
     on_intel do
       url "https://github.com/xerj-org/xerj/releases/download/v#{version}/xerj-#{version}-x86_64-unknown-linux-musl.tar.gz"
-      sha256 "4b12a47e8433e9d01d2b3f505b17b342a6e28d41edaabd274eba5a759e9cde1e"
+      sha256 "43a974407da17be6d487c481a00f539d1edd081c19a2c3662b7b6881bbccf163"
     end
   end
 
