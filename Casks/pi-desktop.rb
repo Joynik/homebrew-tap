@@ -1,6 +1,6 @@
 cask "pi-desktop" do
-  version "0.2.1-alpha"
-  sha256 "23f6b38a9c63a11bbdcdabe3269bb2aa4c0668073fbfd8b43ac3e361758788e7"
+  version "0.2.2-alpha"
+  sha256 "4f98662d567c51620afbd0a8a07addf1f4c873490de329476c2d6d74ebc69777"
 
   url "https://github.com/FaqFirebase/pi-desktop/releases/download/v#{version}/Pi-Desktop-#{version}-mac-arm64.dmg"
   name "Pi Desktop"
