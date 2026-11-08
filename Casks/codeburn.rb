@@ -1,6 +1,6 @@
 cask "codeburn" do
-  version "0.9.27"
-  sha256 "81f77bb6aa76bc618ff4a3f1798ce60b9b16f6d7b50629b6d1cab4d977cb17fb"
+  version "0.9.28"
+  sha256 "37ce4922d7d04531a486bc743307329c21325b2f573fea7caf20eabd072efc5a"
 
   url "https://github.com/getagentseal/codeburn/releases/download/desktop-v#{version}/CodeBurn-#{version}-arm64.dmg"
   name "CodeBurn"
