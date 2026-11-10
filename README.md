@@ -42,6 +42,7 @@ Command-line tools and services installed through Homebrew.
 
 | Package | Description | Install |
 | --- | --- | --- |
+| [KitFlow](https://github.com/Joynik/KitFlow) | Start projects and maintain configuration standards | `brew install joynik/tap/kitflow` |
 | [mackeep-cli](https://github.com/Joynik/mackeep) | Backup and keep your application settings in sync | `brew install joynik/tap/mackeep-cli` |
 | [osm](https://github.com/Joynik/obsidian-semantic-mcp) | Local MCP server for semantic search in Obsidian vaults | `brew install joynik/tap/osm` |
 | [qdrant](https://qdrant.tech) | Vector search engine and database for AI applications | `brew install joynik/tap/qdrant` |
@@ -199,6 +200,7 @@ brew uninstall <formula>
 
 ### KitFlow releases
 
-KitFlow integration is prepared for macOS ARM64 and Linux ARM64/x86_64. After the first release
-is published, its workflow will add `Formula/kitflow.rb` using a deploy key restricted to this tap.
-KitFlow is not installable from this tap until that release is published.
+KitFlow provides standalone archives for macOS 15 or newer on ARM64, and Linux on ARM64/x86_64.
+Its release workflow updates `Formula/kitflow.rb` immediately after publication using a deploy key
+restricted to this tap. Run `brew update && brew upgrade joynik/tap/kitflow` to receive updates.
+The shared formula updater also discovers KitFlow.
