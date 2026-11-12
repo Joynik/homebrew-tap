@@ -1,4 +1,4 @@
-cask "pi-desktop 2" do
+cask "pi-desktop-2" do
   version "0.2.2"
   sha256 "0c676610f83b6e3871308ad617f9f3c459fc679e5e4e7ab4210f82b61eb8fcb9"
 
