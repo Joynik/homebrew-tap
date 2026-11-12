@@ -1,6 +1,6 @@
 cask "voicestudio" do
-  version "0.5.7"
-  sha256 "8db7a16f35af1e4eaca25c389d376acc86b3885f30d1982f5fd6497953f888a0"
+  version "0.5.8"
+  sha256 "378db9d7bf71a69a227b0f442d40acfe957a09d1a8ce17566059b235b8ed209e"
 
   url "https://github.com/debpalash/VoiceStudio/releases/download/v#{version}/VoiceStudio-#{version}-mac-arm64.dmg"
   name "VoiceStudio"
