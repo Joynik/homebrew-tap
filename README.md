@@ -26,15 +26,15 @@ macOS applications installed through Homebrew Cask.
 | Package | Description | Install |
 | --- | --- | --- |
 | [cardinal](https://github.com/franciscoxc/cardinal) | Fastest file searching tool for macOS | `brew install --cask joynik/tap/cardinal` |
-| [codeburn](https://github.com/getagentseal/codeburn/) | See where your AI spend goes. | `brew install --cask joynik/tap/codeburn` |
 | [imgo](https://github.com/meowtec/imgo) | Image optimization app for macOS. | `brew install --cask joynik/tap/imgo` |
 | [machstruct](https://github.com/lustech/MachStruct) | Native macOS viewer and editor for JSON, XML, YAML, CSV | `brew install --cask joynik/tap/machstruct` |
 | [mackeep](https://github.com/Joynik/mackeep) | Backup and keep your application settings in sync | `brew install --cask joynik/tap/mackeep` |
 | [magnitude](https://github.com/magnitudedev/magnitude/) | Run open models as fast as your hardware allows. | `brew install --cask joynik/tap/magnitude` |
+| [ohmyhf](https://github.com/fzlzjerry/ohmyhf/) | Unofficial cross-platform desktop client for the Hugging Face Hub | `brew install --cask joynik/tap/ohmyhf` |
 | [omniroute](https://github.com/diegosouzapw/OmniRoute/) | The Free AI Gateway | `brew install --cask joynik/tap/omniroute` |
-| [solidcraft](https://github.com/tangency-labs/solidcraft/) | Parametric 3D CAD application built in pure Rust. Desktop, web, and automation through MCP. | `brew install --cask joynik/tap/solidcraft` |
+| [pi-desktop](https://github.com/FaqFirebase/pi-desktop/) | Pi Desktop: a free, open source desktop GUI for the Pi coding agent and oh-my-pi. Chat, edit files, run a terminal, and review diffs in one window. | `brew install --cask joynik/tap/pi-desktop` |
+| [pi-desktop-2](https://github.com/vastsa/PI-Desktop/) | Local-first AI coding agent desktop: Electron + Rust host core + pi Agent Harness + user-installable plugins | `brew install --cask joynik/tap/pi-desktop-2` |
 | [virustotal](https://github.com/Jerry23011/VirusTotal-macOS/) | An elegant VirusTotal client built with Swift and SwiftUI | `brew install --cask joynik/tap/virustotal` |
-| [voicestudio](https://github.com/debpalash/VoiceStudio/) | Open-source voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages. | `brew install --cask joynik/tap/voicestudio` |
 
 ## Available formulae
 
@@ -46,7 +46,7 @@ Command-line tools and services installed through Homebrew.
 | [mackeep-cli](https://github.com/Joynik/mackeep) | Backup and keep your application settings in sync | `brew install joynik/tap/mackeep-cli` |
 | [osm](https://github.com/Joynik/obsidian-semantic-mcp) | Local MCP server for semantic search in Obsidian vaults | `brew install joynik/tap/osm` |
 | [qdrant](https://qdrant.tech) | Vector search engine and database for AI applications | `brew install joynik/tap/qdrant` |
-| [solidcraft-cli](https://github.com/tangency-labs/solidcraft) | Headless CLI and MCP server for SolidCraft parametric CAD | `brew install joynik/tap/solidcraft-cli` |
+| [xerj](https://xerj.org) | Local-first search engine and MCP server for AI agents | `brew install joynik/tap/xerj` |
 
 ## Installation
 
@@ -145,7 +145,7 @@ in a temporary Git worktree. Download requests never include the repository toke
 It does not install or execute upstream binaries during updates.
 
 This template covers versioned source or binary archives, including the current
-Qdrant and SolidCraft CLI formulae. Complex recipes with resources, patches,
+Qdrant formula. Complex recipes with resources, patches,
 bottles, mirrors, HEAD or explicit stable blocks fail with an explanatory error
 and require review rather than guessing how to update them. A release that changes
 its asset names or installation layout also requires a formula adjustment.
