@@ -15,6 +15,17 @@ class Qdrant < Formula
     end
   end
 
+  on_linux do
+    on_arm do
+      url "https://github.com/qdrant/qdrant/releases/download/v#{version}/qdrant-aarch64-unknown-linux-musl.tar.gz"
+      sha256 "bd8a458b8ef8006ce2c603c5bd6d1d973e39d787f794008dd959112e747c3bb7"
+    end
+    on_intel do
+      url "https://github.com/qdrant/qdrant/releases/download/v#{version}/qdrant-x86_64-unknown-linux-musl.tar.gz"
+      sha256 "b03a64616a1f41ddab78b480a318466541765f19835318113b1821cbea8df52c"
+    end
+  end
+
   livecheck do
     url :stable
     strategy :github_latest
