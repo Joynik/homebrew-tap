@@ -74,6 +74,9 @@ The tap has two bulk workflows:
 They discover every `Casks/*.rb` or `Formula/*.rb` automatically, including
 Mackeep and OSM. There is no package list to maintain. Both use the reusable
 `update-packages.yml` workflow and `update-packages/update.sh`.
+Adding or removing a package file automatically changes the next bulk run.
+Updater tests use independent fixtures; archive coverage discovers the current
+formula files automatically. New formulae must follow the archive template below.
 
 Each package is checked with `brew livecheck`. Unchanged packages require no
 archive downloads. Updates get a separate PR, followed by a merge/auto-merge

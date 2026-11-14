@@ -63,8 +63,8 @@ class WorkflowTests(unittest.TestCase):
             path.chmod(0o755)
         for directory in ['Formula', 'Casks']:
             (self.root / directory).mkdir()
-        for name in ['qdrant', 'solidcraft-cli']:
-            shutil.copy(ROOT / 'Formula' / f'{name}.rb', self.root / 'Formula')
+        for name in ['example', 'second']:
+            (self.root / 'Formula' / f'{name}.rb').write_text('')
         (self.root / 'Casks/example.rb').write_text('cask "example" do\nend\n')
         self.env = dict(os.environ, PATH=f"{self.root / 'bin'}:{os.environ['PATH']}",
                         FIXTURE=str(self.root), TAP_NAME='joynik/tap',
@@ -75,7 +75,8 @@ class WorkflowTests(unittest.TestCase):
         result = subprocess.run(['bash', str(ROOT / 'update-packages/update.sh')],
                                 cwd=self.root, env=self.env | env,
                                 text=True, capture_output=True)
-        calls = [json.loads(line) for line in (self.root / 'calls').read_text().splitlines()]
+        log = self.root / 'calls'
+        calls = [json.loads(line) for line in log.read_text().splitlines()] if log.exists() else []
         return result, calls
 
     def test_cask_creation_and_merge_fallback(self):
@@ -109,7 +110,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(sum(c[:3] == ['gh', 'pr', 'merge'] for c in calls), 1)
 
     def test_formula_creation_is_isolated_and_no_force_push(self):
-        result, calls = self.run_updater(PACKAGE_KIND='formula', PACKAGE_NAME='qdrant')
+        result, calls = self.run_updater(PACKAGE_KIND='formula', PACKAGE_NAME='example')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertTrue(any(c[:3] == ['git', 'worktree', 'add'] for c in calls))
         self.assertTrue(any(c[:3] == ['git', 'worktree', 'remove'] for c in calls))
@@ -117,7 +118,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertFalse(any('--force' in c and 'push' in c for c in calls))
 
     def test_formula_network_commands_use_explicit_credentials(self):
-        result, calls = self.run_updater(PACKAGE_KIND='formula', PACKAGE_NAME='qdrant')
+        result, calls = self.run_updater(PACKAGE_KIND='formula', PACKAGE_NAME='example')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         network = [c for c in calls if c[0] == 'git' and ('fetch' in c or 'push' in c)]
         self.assertEqual(len(network), 2)
@@ -129,33 +130,44 @@ class WorkflowTests(unittest.TestCase):
     def test_failed_download_cleans_up_and_never_publishes(self):
         result, calls = self.run_updater(PACKAGE_KIND='formula', DOWNLOAD_FAIL='1')
         self.assertEqual(result.returncode, 1)
-        self.assertTrue(any('joynik/tap/solidcraft-cli' in c for c in calls))
+        self.assertTrue(any('joynik/tap/second' in c for c in calls))
         self.assertTrue(any(c[:3] == ['git', 'worktree', 'remove'] for c in calls))
         self.assertFalse(any('push' in c or 'commit' in c for c in calls))
         self.assertFalse(any(c[:3] == ['gh', 'pr', 'merge'] for c in calls))
 
     def test_invalid_livecheck_does_not_publish_and_continues(self):
-        result, calls = self.run_updater(PACKAGE_KIND='formula', BAD_JSON='qdrant')
+        result, calls = self.run_updater(PACKAGE_KIND='formula', BAD_JSON='example')
         self.assertEqual(result.returncode, 1)
-        self.assertTrue(any('joynik/tap/solidcraft-cli' in c for c in calls))
-        self.assertFalse(any('bump-formula-qdrant-99.0.0' in c for c in calls))
+        self.assertTrue(any('joynik/tap/second' in c for c in calls))
+        self.assertFalse(any('bump-formula-example-99.0.0' in c for c in calls))
 
-    def test_bulk_checks_include_personal_projects(self):
-        for kind, directory, names in [
-            ('formula', 'Formula', ['osm', 'mackeep-cli']),
-            ('cask', 'Casks', ['mackeep']),
-        ]:
-            for name in names:
-                (self.root / directory / f'{name}.rb').write_text('')
-            result, calls = self.run_updater(PACKAGE_KIND=kind, BAD_JSON='qdrant')
-            for name in names:
-                self.assertTrue(any(f'joynik/tap/{name}' in c for c in calls))
+    def test_bulk_discovers_added_packages_and_ignores_removed_packages(self):
+        for kind, directory in [('formula', 'Formula'), ('cask', 'Casks')]:
+            with self.subTest(kind=kind):
+                added = self.root / directory / 'new-package.rb'
+                added.write_text('')
+                (self.root / directory / 'example.rb').unlink()
+                result, calls = self.run_updater(PACKAGE_KIND=kind)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                checked = {c[-1] for c in calls if c[:2] == ['brew', 'livecheck']}
+                expected = {f'joynik/tap/{p.stem}' for p in (self.root / directory).glob('*.rb')}
+                self.assertEqual(checked, expected)
+                (self.root / 'calls').unlink()
+
+    def test_empty_catalog_does_not_call_external_commands(self):
+        for kind, directory in [('formula', 'Formula'), ('cask', 'Casks')]:
+            with self.subTest(kind=kind):
+                for path in (self.root / directory).glob('*.rb'):
+                    path.unlink()
+                result, calls = self.run_updater(PACKAGE_KIND=kind)
+                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                self.assertEqual(calls, [])
 
     def test_failed_livecheck_preserves_upstream_diagnostic(self):
-        result, calls = self.run_updater(PACKAGE_KIND='formula', LIVECHECK_FAIL='qdrant')
+        result, calls = self.run_updater(PACKAGE_KIND='formula', LIVECHECK_FAIL='example')
         self.assertEqual(result.returncode, 1)
         self.assertIn('upstream livecheck detail', result.stdout)
-        self.assertTrue(any('joynik/tap/solidcraft-cli' in c for c in calls))
+        self.assertTrue(any('joynik/tap/second' in c for c in calls))
 
     def test_unknown_package_is_rejected(self):
         result = subprocess.run(['bash', str(ROOT / 'update-packages/update.sh')],

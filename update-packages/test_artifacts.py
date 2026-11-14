@@ -11,6 +11,7 @@ from unittest.mock import patch
 
 import formula
 import osm
+from fixtures import ARCHIVE_FORMULA
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -44,8 +45,9 @@ class Response(io.BytesIO):
 
 
 class ArtifactTests(unittest.TestCase):
-    def fixture(self, name='mackeep-cli', **archive_options):
-        source = (ROOT / 'Formula' / f'{name}.rb').read_text()
+    def fixture(self, name='example', source=None, **archive_options):
+        source = source or ((ROOT / 'update-packages/fixtures/osm.rb').read_text()
+                  if name == 'osm' else ARCHIVE_FORMULA)
         version = '99.0.0'
         old = formula.VERSION.search(source)[1]
         urls = [p['url'].replace(old, version).replace('#{version}', version)
@@ -62,7 +64,7 @@ class ArtifactTests(unittest.TestCase):
             return b'[project]\nname = "obsidian-semantic-mcp"\nversion = "99.0.0"\n'
         return source, urls, data, release, download
 
-    def run_render(self, name='mackeep-cli', **options):
+    def run_render(self, name='example', **options):
         source, urls, data, release, download = self.fixture(name, **options)
         with patch.object(formula, 'download', side_effect=download), patch.object(
             formula, 'urlopen', side_effect=lambda req, **kw: Response(req.full_url, data)
@@ -70,9 +72,10 @@ class ArtifactTests(unittest.TestCase):
             return formula.render(source, '99.0.0', package=name)
 
     def test_real_download_path_updates_all_platforms(self):
-        for name in ['qdrant', 'mackeep-cli', 'osm', 'solidcraft-cli']:
+        for path in sorted((ROOT / 'Formula').glob('*.rb')):
+            name = path.stem
             with self.subTest(name=name):
-                result = self.run_render(name)
+                result = self.run_render(name, source=path.read_text())
                 self.assertIn('version "99.0.0"', result)
                 original = (ROOT / 'Formula' / f'{name}.rb').read_text()
                 self.assertEqual(original.split('  def install\n')[1], result.split('  def install\n')[1])
@@ -82,20 +85,20 @@ class ArtifactTests(unittest.TestCase):
         release['assets'].pop()
         with patch.object(formula, 'download', side_effect=download), patch.object(formula, 'checksum') as fetch:
             with self.assertRaisesRegex(ValueError, 'artifact is missing'):
-                formula.render(source, '99.0.0', package='mackeep-cli')
+                formula.render(source, '99.0.0', package='example')
             fetch.assert_not_called()
 
     def test_release_metadata_is_requested_once_for_all_platforms(self):
         source, urls, data, release, download = self.fixture()
         with patch.object(formula, 'download', side_effect=download) as metadata, patch.object(formula, 'checksum', return_value='a' * 64):
-            formula.render(source, '99.0.0', package='mackeep-cli')
+            formula.render(source, '99.0.0', package='example')
             self.assertEqual(metadata.call_count, 1)
 
     def test_prerelease_is_rejected(self):
         source, urls, data, release, download = self.fixture()
         release['prerelease'] = True
         with patch.object(formula, 'download', side_effect=download), self.assertRaisesRegex(ValueError, 'stable published'):
-            formula.render(source, '99.0.0', package='mackeep-cli')
+            formula.render(source, '99.0.0', package='example')
 
     def test_digest_mismatch_is_rejected(self):
         with patch.object(formula, 'urlopen', return_value=Response('https://example.org/archive', b'archive')):
