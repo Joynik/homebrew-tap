@@ -71,8 +71,8 @@ class WorkflowTests(unittest.TestCase):
                         GH_TOKEN='test', HOMEBREW_GITHUB_API_TOKEN='test',
                         GITHUB_REPOSITORY='Joynik/homebrew-tap')
 
-    def run_updater(self, **env):
-        result = subprocess.run(['bash', str(ROOT / 'update-packages/update.sh')],
+    def run_updater(self, shell='bash', **env):
+        result = subprocess.run([shell, str(ROOT / 'update-packages/update.sh')],
                                 cwd=self.root, env=self.env | env,
                                 text=True, capture_output=True)
         log = self.root / 'calls'
@@ -159,9 +159,11 @@ class WorkflowTests(unittest.TestCase):
             with self.subTest(kind=kind):
                 for path in (self.root / directory).glob('*.rb'):
                     path.unlink()
-                result, calls = self.run_updater(PACKAGE_KIND=kind)
-                self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-                self.assertEqual(calls, [])
+                for shell in ['bash', '/bin/bash']:
+                    with self.subTest(shell=shell):
+                        result, calls = self.run_updater(shell=shell, PACKAGE_KIND=kind)
+                        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                        self.assertEqual(calls, [])
 
     def test_failed_livecheck_preserves_upstream_diagnostic(self):
         result, calls = self.run_updater(PACKAGE_KIND='formula', LIVECHECK_FAIL='example')

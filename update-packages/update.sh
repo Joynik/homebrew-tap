@@ -43,6 +43,12 @@ if [[ -n "${PACKAGE_NAME:-}" ]]; then
   package_files=("$directory/$PACKAGE_NAME.rb")
 fi
 
+# Bash 3.2 treats an empty array as unset under nounset.
+if (( ${#package_files[@]} == 0 )); then
+  echo "No $kind packages found in $directory."
+  exit 0
+fi
+
 create_update_pr() (
   set -e
   if [[ "$kind" == cask ]]; then
