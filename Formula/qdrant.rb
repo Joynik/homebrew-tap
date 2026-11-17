@@ -2,27 +2,27 @@ class Qdrant < Formula
   desc "Vector search engine and database for AI applications"
   homepage "https://qdrant.tech"
   license "Apache-2.0"
-  version "1.20.1"
+  version "1.20.2"
 
   on_macos do
     on_arm do
       url "https://github.com/qdrant/qdrant/releases/download/v#{version}/qdrant-aarch64-apple-darwin.tar.gz"
-      sha256 "5deb80dfa44afea90fa27bb3fcd269e60b1e88347e769f2547a0269aadb37003" # arm
+      sha256 "385b244e6283968b2be926358541b5bc19b9ada7ea9586e900684388bc912d5f" # arm
     end
     on_intel do
       url "https://github.com/qdrant/qdrant/releases/download/v#{version}/qdrant-x86_64-apple-darwin.tar.gz"
-      sha256 "5f3ae5d62d476788f0c529b6f9276d5517e9c70b4707ef6374c1cceea4369597" # intel
+      sha256 "73a6538ccccb892ec2c6fa3431faf1e73fba7eb2179079adbd0c65ae4c55bf6a" # intel
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/qdrant/qdrant/releases/download/v#{version}/qdrant-aarch64-unknown-linux-musl.tar.gz"
-      sha256 "d608764d7d8e331633cba9f953ac15270e1330b55a2ff61cd1a6748222f97355"
+      sha256 "c0c16a08440213b89facfbd2dd3cf4cd6fa222c1260b057a0ea77b41a75774c0"
     end
     on_intel do
       url "https://github.com/qdrant/qdrant/releases/download/v#{version}/qdrant-x86_64-unknown-linux-musl.tar.gz"
-      sha256 "52ea6723c10f8bd7be63950f4210bd52e93a8f45e8e81347f5ec94aa918fe14f"
+      sha256 "7c3e956b97830a9faa6391540330380c2fa4aa2f92df99bd8d1880a703b922af"
     end
   end
 
