@@ -1,6 +1,6 @@
 cask "omniroute" do
-  version "3.8.53"
-  sha256 "57eb52491739137db667bda359adea879690b1e7e94d207b4b80658e219f1389"
+  version "3.8.54"
+  sha256 "175e524f0a5021d22ffc4c6e67f44b931dcacd61d5d5f014b2874a31efdc7656"
 
   url "https://github.com/diegosouzapw/OmniRoute/releases/download/v#{version}/OmniRoute-#{version}.dmg"
   name "OmniRoute"
