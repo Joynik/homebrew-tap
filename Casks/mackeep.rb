@@ -1,6 +1,6 @@
 cask "mackeep" do
-  version "0.26.1"
-  sha256 "7b46dc5a6bb9c718b005acee23002f33ea0f06b78553c6a258bfdba57f1c2fe3"
+  version "0.26.2"
+  sha256 "e4530bfa54d5a6c8d0887b0dbe9fbf094d8d1f946ba05c1bec72d069eef98e8f"
 
   url "https://github.com/Joynik/mackeep/releases/download/#{version}/Mackeep-#{version}-macos-arm64.dmg"
   name "Mackeep"
