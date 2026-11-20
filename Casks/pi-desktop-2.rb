@@ -1,6 +1,6 @@
 cask "pi-desktop-2" do
-  version "0.22.0"
-  sha256 "0c676610f83b6e3871308ad617f9f3c459fc679e5e4e7ab4210f82b61eb8fcb9"
+  version "0.23.0"
+  sha256 "839c503362dd74833894337afbd1490db3fd6a2a57ced31069c67130c70be26f"
 
   url "https://github.com/vastsa/PI-Desktop/releases/download/v#{version}/PI-Desktop-#{version}-arm64.dmg"
   name "Pi-Desktop"
