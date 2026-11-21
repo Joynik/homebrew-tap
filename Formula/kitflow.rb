@@ -3,23 +3,23 @@
 class Kitflow < Formula
   desc "Start projects and maintain configuration standards"
   homepage "https://github.com/Joynik/KitFlow"
-  version "0.20.1"
+  version "0.21.0"
 
   on_macos do
     depends_on macos: :sequoia
     depends_on arch: :arm64
 
-    url "https://github.com/Joynik/KitFlow/releases/download/0.20.1/kitflow-0.20.1-macos-arm64.tar.gz"
-    sha256 "23b554bf0ef56fd5e5a8c06cbf7f7db74518bcea5142b516c93ba331a03edf8c"
+    url "https://github.com/Joynik/KitFlow/releases/download/0.21.0/kitflow-0.21.0-macos-arm64.tar.gz"
+    sha256 "99559412cd0df19471a78bcd081a2847a004271707602e011572e932c457081c"
   end
 
   on_linux do
     if Hardware::CPU.arm?
-      url "https://github.com/Joynik/KitFlow/releases/download/0.20.1/kitflow-0.20.1-linux-arm64.tar.gz"
-      sha256 "6c8dd7e6664e4e1c40d4e5c5a6081aeccaafc5f32f840c5ca77115b99c3bd928"
+      url "https://github.com/Joynik/KitFlow/releases/download/0.21.0/kitflow-0.21.0-linux-arm64.tar.gz"
+      sha256 "bab5f913918c9c79fc50edcd4dd0b7e3614f100f971414a6fde58c01fbbecd4c"
     else
-      url "https://github.com/Joynik/KitFlow/releases/download/0.20.1/kitflow-0.20.1-linux-x86_64.tar.gz"
-      sha256 "4ca19af571ca5b3e434673aad4ea4d0d1ce18381570d422258460af85191b456"
+      url "https://github.com/Joynik/KitFlow/releases/download/0.21.0/kitflow-0.21.0-linux-x86_64.tar.gz"
+      sha256 "35c3145529801c440b4924fea61232d77e1b855dd69d9f29b76d21b4d96a3806"
     end
   end
 
