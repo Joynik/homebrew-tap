@@ -1,6 +1,6 @@
 cask "magnitude" do
-  version "0.3.2"
-  sha256 "186532551b93d8f62d4e872d7a9e721b2c230e106aa84f2d4e930244081ab5b4"
+  version "0.3.5"
+  sha256 "f020ac3304cad6db9717a385c966d4846279a2dcabe3b470a2018ab2171c7ddc"
 
   url "https://github.com/magnitudedev/magnitude/releases/download/%40magnitudedev%2Fcli%40#{version}/magnitude-desktop-darwin-arm64.dmg"
   name "Magnitude"
