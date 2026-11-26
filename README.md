@@ -32,6 +32,7 @@ macOS applications installed through Homebrew Cask.
 | [magnitude](https://github.com/magnitudedev/magnitude/) | Run open models as fast as your hardware allows. | `brew install --cask joynik/tap/magnitude` |
 | [ohmyhf](https://github.com/fzlzjerry/ohmyhf/) | Unofficial cross-platform desktop client for the Hugging Face Hub | `brew install --cask joynik/tap/ohmyhf` |
 | [omniroute](https://github.com/diegosouzapw/OmniRoute/) | The Free AI Gateway | `brew install --cask joynik/tap/omniroute` |
+| [patchbay](https://github.com/Joynik/Patchbay) | Manage MCP server configurations across AI agents | `brew install --cask joynik/tap/patchbay` |
 | [pi-desktop](https://github.com/FaqFirebase/pi-desktop/) | Pi Desktop: a free, open source desktop GUI for the Pi coding agent and oh-my-pi. Chat, edit files, run a terminal, and review diffs in one window. | `brew install --cask joynik/tap/pi-desktop` |
 | [pi-desktop-2](https://github.com/vastsa/PI-Desktop/) | Local-first AI coding agent desktop: Electron + Rust host core + pi Agent Harness + user-installable plugins | `brew install --cask joynik/tap/pi-desktop-2` |
 | [virustotal](https://github.com/Jerry23011/VirusTotal-macOS/) | An elegant VirusTotal client built with Swift and SwiftUI | `brew install --cask joynik/tap/virustotal` |
