@@ -1,6 +1,6 @@
 cask "patchbay" do
-  version "0.3.1"
-  sha256 "686d296e0124087c6c729ae55b641d68b783791dfbc71e9c5532bb821696d257"
+  version "0.4.0"
+  sha256 "9aeb0206118d6ecdb5f1e28512259d0fafa7efe0c3c56dfaaf6ccabaecc6a38b"
 
   url "https://github.com/Joynik/Patchbay/releases/download/#{version}/Patchbay-#{version}-macos-arm64.zip"
   name "Patchbay"
